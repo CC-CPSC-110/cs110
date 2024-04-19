@@ -9,6 +9,9 @@ setup(
     url='https://github.com/CC-CPSC-110/cs110',
     author='Paul Bucci',
     author_email='paul.bucci@ubc.ca',
-
+    install_requires=[
+        'mypy',
+        'pylint'
+    ],
     py_modules=['cs110'],
 )
