@@ -5,7 +5,7 @@ import sys
 import subprocess
 from typing import Any
 
-__version__ = 'dev'
+__version__ = '0.0'
 
 sys.tracebacklimit = 0
 
