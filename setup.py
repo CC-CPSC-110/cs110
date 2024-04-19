@@ -3,7 +3,7 @@ from setuptools import setup
 from my_pip_package import __version__
 
 setup(
-    name='my_pip_package',
+    name='cs110',
     version=__version__,
 
     url='https://github.com/CC-CPSC-110/cs110',
