@@ -111,7 +111,7 @@ def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any
     print("Running instructor tests...\n")
     print("=" * len(msg))
     
-    builder = tests.Test()
+    builder = tests.TestBuilder()
     
     builder.build_tests(expect, student_module)
     
@@ -172,11 +172,11 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     if student_repo_path not in sys.path:
         sys.path.append(student_repo_path)
 
-    if student_repo_path not in sys.path:
+    if tests_path not in sys.path:
         sys.path.append(tests_path)
 
     try:
-        tests = importlib.import_module("tests")
+        tests = importlib.import_module("lesson_tests")
         print(dir(tests))
     except ImportError as e:
         print(f"Error importing instructor test module: {e}")
