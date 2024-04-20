@@ -155,14 +155,6 @@ def ensure_init_py(root_dir: str) -> None:
         print(f"Created __init__.py in {root_dir}")
 
 
-def run_tests_then_lint_directory(student_repo_path: str) -> None:
-    """Run only the tests and linting, but not typechecking. Throws error if fail."""
-    run_tests_only()
-    ensure_init_py(student_repo_path)
-    print(f"Linting {student_repo_path}...")
-    lint(student_repo_path)
-
-
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
@@ -188,8 +180,13 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
             student_module = importlib.import_module(module_name)
             print(f"Student module {module_name} imported successfully.")
             build_instructor_tests(student_module, tests)
-            run_tests_then_lint_directory(student_repo_path)
 
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
             raise e
+        
+    run_tests_only()
+    
+    ensure_init_py(student_repo_path)
+    print(f"Linting {student_repo_path}...")
+    lint(student_repo_path)
