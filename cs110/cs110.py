@@ -6,6 +6,7 @@ import sys
 import subprocess
 from typing import Any
 from pylint.reporters.text import ColorizedTextReporter
+from pylint.lint import Run
 from io import StringIO
 
 __version__ = '0.0'
@@ -83,6 +84,11 @@ def summarize() -> None:
         return
 
     print("==========================================")
+    print("Running linting...")
+
+    lint(caller_file)
+
+    print("==========================================")
     print("Running type checks...")
 
     try:
@@ -91,14 +97,6 @@ def summarize() -> None:
     except: # pylint: disable=bare-except
         print("")
 
-    print("==========================================")
-    print("Running linting...")
-
-    try:
-        subprocess.check_call(
-            [sys.executable, "-m", "pylint", caller_file])
-    except: # pylint: disable=bare-except
-        print("")
 
 
 def run_tests_only():
@@ -109,25 +107,25 @@ def run_tests_only():
     runner.run(suite)
 
 
+def lint(filename):
+    reporter = ColorizedTextReporter()
+    results = Run([filename], reporter=reporter, exit=False)
+    if results.linter.stats.global_note < 9.0:
+        raise Exception("Too many linting errors.")
+
+
 def run_tests_then_lint_file():
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
+    
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
         return
     
     print(f"Linting {caller_file}...")
-
-    from pylint.lint import Run
-    
-    reporter = ColorizedTextReporter()
-
-    results = Run(["--fail-under=7.0", caller_file], reporter=reporter, exit=False)
-    
-    if results.linter.stats.global_note < 9.0:
-        raise Exception("Too many linting errors.")
+    lint(caller_file)
 
 
 def ensure_init_py(root_dir):
@@ -140,20 +138,10 @@ def ensure_init_py(root_dir):
 def run_tests_then_lint_directory(STUDENT_REPO_PATH):
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
-    
     ensure_init_py(STUDENT_REPO_PATH)
-    
     print(f"Linting {STUDENT_REPO_PATH}...")
-
-    from pylint.lint import Run
+    lint(STUDENT_REPO_PATH)
     
-    reporter = ColorizedTextReporter()
-
-    results = Run([STUDENT_REPO_PATH], reporter=reporter, exit=False)
-    
-    if results.linter.stats.global_note < 9.0:
-        raise Exception("Too many linting errors.")
-
 
 if __name__ == '__main__':
     summarize()
