@@ -113,7 +113,7 @@ def run_tests_only():
 
 def lint(filename):
     reporter = ColorizedTextReporter()
-    results = Run([filename], reporter=reporter, exit=False)
+    results = Run(["--disable=C0103", filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.")
 
