@@ -3,8 +3,11 @@ import inspect
 import unittest
 import os
 import sys
+import importlib
+import argparse
 import subprocess
-from typing import Any
+from typing import Any, List
+import json
 from pylint.reporters.text import ColorizedTextReporter
 from pylint.lint import Run
 from io import StringIO
@@ -102,6 +105,46 @@ def summarize() -> None:
         print("")
 
 
+def load_tests(config_file, module_name):
+    """Load test configurations from a JSON file for a specific module."""
+    with open(config_file, 'r') as file:
+        all_tests = json.load(file)
+        return all_tests.get(module_name, [])
+
+
+def run_instructor_tests(student_module, tests):
+    """Run specified tests on the student module."""
+    for test in tests:
+        func = getattr(student_module, test['function'], None)
+        if func is None:
+            print(f"Function {test['function']} not found in module.")
+            continue
+        
+        for case in test['tests']:
+            args = [convert_type(arg['value'], arg['type']) for arg in case['args']]
+            expected = convert_type(case['expected']['value'], case['expected']['type'])
+            kwargs = {}
+            tolerance = case.get('tolerance')
+
+            if tolerance is not None:
+                expect(func, *args, **kwargs, expected=expected, tolerance=tolerance)
+            else:
+                expect(func, *args, **kwargs, expected=expected)
+    run_tests_then_lint_directory(args.student_repo_path)
+
+
+def convert_type(value, type_str):
+    """Convert the value to the specified type."""
+    if type_str == "int":
+        return int(value)
+    elif type_str == "float":
+        return float(value)
+    elif type_str == "str":
+        return str(value)
+    elif type_str == "bool":
+        return bool(value)
+    return value  # Default case if type is not recognized or not specified
+
 
 def run_tests_only() -> None:
     """Runs only the tests without linting."""
@@ -147,5 +190,37 @@ def run_tests_then_lint_directory(STUDENT_REPO_PATH: str) -> None:
     lint(STUDENT_REPO_PATH)
     
 
-if __name__ == '__main__':
-    summarize()
+def main(student_repo_path: str, filenames: List[str], config_file: str):
+    """Main function to import student modules, load tests and run them."""
+
+    # Add the student repository path to sys.path to make it available for import
+    if student_repo_path not in sys.path:
+        sys.path.append(student_repo_path)
+
+    for filename in filenames:
+        module_name = filename[:-3]  # Strip the .py from the filename to get the module name
+        tests = load_tests(config_file, module_name)
+
+        try:
+            # Import the module
+            student_module = importlib.import_module(module_name)
+            print(f"Student module {module_name} imported successfully.")
+            run_instructor_tests(student_module, tests)
+
+        except ImportError as e:
+            print(f"Error importing module {module_name}: {e}")
+            continue
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run tests on a student's repository.")
+    parser.add_argument("--path", dest="student_repo_path", required=True,
+                        help="The path to the student's repository.")
+    parser.add_argument("--files", dest="filenames", nargs='+', required=True,
+                        help="The filename(s) of the python script(s) to test. Multiple filenames can be provided.")
+    parser.add_argument("--config", dest="config_file", required=True,
+                        help="Path to the JSON configuration file for the tests.")
+    
+    args = parser.parse_args()
+    
+    main(args.student_repo_path, args.filenames, args.config_file)
