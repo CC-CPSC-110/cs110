@@ -104,7 +104,7 @@ def summarize() -> None:
         pass
 
 
-def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any:
+def build_instructor_tests(student_module: Any, tests: Any) -> Any:
     """Run specified tests on the student module."""
     msg = "Running instructor tests..."
     print("=" * len(msg))
@@ -114,8 +114,6 @@ def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any
     builder = tests.TestBuilder()
     
     builder.build_tests(expect, student_module)
-    
-    run_tests_then_lint_directory(repo_path)
 
 
 def run_tests_only() -> None:
@@ -177,7 +175,6 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
 
     try:
         tests = importlib.import_module("lesson_tests")
-        print(dir(tests))
     except ImportError as e:
         print(f"Error importing instructor test module: {e}")
 
@@ -189,7 +186,8 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
             # Import the module
             student_module = importlib.import_module(module_name)
             print(f"Student module {module_name} imported successfully.")
-            run_instructor_tests(student_module, tests, student_repo_path)
+            build_instructor_tests(student_module, tests)
+            run_tests_then_lint_directory(student_repo_path)
 
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
