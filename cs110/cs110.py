@@ -105,7 +105,7 @@ def run_tests() -> None:
 
 def typecheck(file_path):
     print("==========================================")
-    print("Running type checks...")
+    print(f"Running type checks on {file_path}")
 
         # subprocess.check_call(
         #     [sys.executable,
@@ -114,7 +114,7 @@ def typecheck(file_path):
         #      "--exclude='.git/'",
         #      file_path])
         
-    command = ['mypy', file_path]
+    command = ['mypy', "--disallow-untyped-defs", "--exclude='.git/'", file_path]
     result = subprocess.run(command, text=True, capture_output=True)
     print(result.stdout)
     print(result.stderr)
