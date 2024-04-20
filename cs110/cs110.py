@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
 
 
 def add_dynamic_tests() -> None:
-    """add tests"""
+    """Add dynamic tests."""
     for i, (func, args, expected, tolerance) in enumerate(test_cases, start=1):
         test_method_name = f'test_{i}: {func.__name__}{args} = {expected}'
         test_method = create_test_method(func, args, expected, tolerance)
