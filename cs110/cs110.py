@@ -131,11 +131,10 @@ def run_tests_then_lint_file():
 
 
 def ensure_init_py(root_dir):
-    for subdir, dirs, files in os.walk(root_dir):
-        init_py_path = os.path.join(subdir, '__init__.py')
-        if not os.path.isfile(init_py_path):
-            open(init_py_path, 'a').close()
-            print(f"Created __init__.py in {subdir}")
+    init_py_path = os.path.join(root_dir, '__init__.py')
+    if not os.path.isfile(init_py_path):
+        open(init_py_path, 'a').close()
+        print(f"Created __init__.py in {root_dir}")
 
 
 def run_tests_then_lint_directory():
