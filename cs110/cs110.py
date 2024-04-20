@@ -181,8 +181,8 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
         raise e
 
     for filename in filenames:
-        module_name = filename[:-3]  # Strip the .py from the filename to get the module name
-
+        module_name = os.path.splitext(os.path.basename(filename))[0]
+        print(f"Running {module_name}.")
         try:
             # Import the module
             student_module = importlib.import_module(module_name)
