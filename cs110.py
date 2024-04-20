@@ -53,7 +53,7 @@ class CustomTestRunner(unittest.TextTestRunner): # pylint: disable=too-few-publi
         print(f'\033[94mERROR: {errors} tests had errors\033[0m')
 
         if failures > 0 or errors > 0:
-            raise Exception()
+            raise Exception("There were errors or test failures!")
             
         return result
 
