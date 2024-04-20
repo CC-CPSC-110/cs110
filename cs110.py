@@ -104,7 +104,7 @@ def run_tests_only():
 
 
 def run_tests_then_lint():
-    """Run only the tests and linting, but not typechecking. Throws error if fail." 
+    """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
