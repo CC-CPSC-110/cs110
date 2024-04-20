@@ -100,7 +100,7 @@ def run_tests_only():
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)  # Set verbosity to 0 to suppress default unittest output
     runner.run(suite)
-
+    
 
 if __name__ == '__main__':
     summarize()
