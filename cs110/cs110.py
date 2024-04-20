@@ -177,6 +177,7 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
 
     try:
         tests = importlib.import_module("tests")
+        print(dir(tests))
     except ImportError as e:
         print(f"Error importing instructor test module: {e}")
 
