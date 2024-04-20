@@ -111,7 +111,7 @@ def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any
     print("Running instructor tests...\n")
     print("=" * len(msg))
     
-    tests.build_tests(expect, student_module)
+    tests.Test().build_tests(expect, student_module)
     
     run_tests_then_lint_directory(repo_path)
 
