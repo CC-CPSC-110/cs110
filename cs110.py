@@ -52,6 +52,9 @@ class CustomTestRunner(unittest.TextTestRunner): # pylint: disable=too-few-publi
         print(f'\033[91mFAIL: {failures} tests failed\033[0m')
         print(f'\033[94mERROR: {errors} tests had errors\033[0m')
 
+        if failures > 0 or errors > 0:
+            raise Exception()
+            
         return result
 
 def summarize() -> None:
