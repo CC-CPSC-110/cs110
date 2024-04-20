@@ -70,8 +70,8 @@ def summarize() -> None:
     """Run tests"""
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
+    
     printstr = f"Testing {caller_file}"
-
     print("=" * len(printstr))
     print(printstr)
     print("=" * len(printstr))
@@ -84,39 +84,18 @@ def summarize() -> None:
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
         return
-
-    print("==========================================")
-    print("Running linting...")
-
+    
     lint(caller_file)
-
-    print("==========================================")
-    print("Running type checks...")
-
-    try:
-        subprocess.check_call(
-            [sys.executable,
-             "-m", "mypy",
-             "--disallow-untyped-defs",
-             "--exclude='.git/'",
-             caller_file])
-    except: # pylint: disable=bare-except
-        pass
+    typecheck(caller_file)
 
 
 def build_instructor_tests(student_module: Any, tests: Any) -> Any:
     """Run specified tests on the student module."""
-    msg = "Running instructor tests..."
-    print("=" * len(msg))
-    print("Running instructor tests...\n")
-    print("=" * len(msg))
-    
     builder = tests.TestBuilder()
-    
     builder.build_tests(expect, student_module)
 
 
-def run_tests_only() -> None:
+def run_tests() -> None:
     """Runs only the tests without linting."""
     add_dynamic_tests()
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
@@ -124,27 +103,36 @@ def run_tests_only() -> None:
     runner.run(suite)
 
 
+def typecheck(file_path):
+    print("==========================================")
+    print("Running type checks...")
+
+        # subprocess.check_call(
+        #     [sys.executable,
+        #      "-m", "mypy",
+        #      "--disallow-untyped-defs",
+        #      "--exclude='.git/'",
+        #      file_path])
+        
+    command = ['mypy', file_path]
+    result = subprocess.run(command, text=True, capture_output=True)
+    print(result.stdout)
+    print(result.stderr)
+        
+    if result.returncode > 0:
+        raise Exception("Too many type errors.")
+    
+
 def lint(filename: str) -> None:
     """Run linting."""
+    print("==========================================")
+    print("Running linting...")
+
     reporter = ColorizedTextReporter()
     results = Run(["--disable=C0103,C0303,C0304,R1732,R0903", 
                    filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.") #pylint: disable=broad-exception-raised
-
-
-def run_tests_then_lint_file() -> None:
-    """Run only the tests and linting, but not typechecking. Throws error if fail."""
-    run_tests_only()
-    caller_frame = inspect.stack()[1]
-    caller_file = caller_frame.filename
-
-    if caller_file == "<stdin>":
-        print("No need to lint the interpreter...")
-        return
-
-    print(f"Linting {caller_file}...")
-    lint(caller_file)
 
 
 def ensure_init_py(root_dir: str) -> None:
@@ -184,9 +172,12 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
             raise e
-        
-    run_tests_only()
     
+    msg = "Running instructor tests..."
+    print("=" * len(msg))
+    print("Running instructor tests...\n")
+    
+    run_tests()
     ensure_init_py(student_repo_path)
-    print(f"Linting {student_repo_path}...")
     lint(student_repo_path)
+    typecheck(student_repo_path)
