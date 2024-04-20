@@ -149,7 +149,7 @@ def run_tests_then_lint_directory():
     
     reporter = ColorizedTextReporter()
 
-    results = Run(["--module-naming-style=any", "--fail-under=7.0", cwd], reporter=reporter, exit=False)
+    results = Run([cwd], reporter=reporter, exit=False)
     
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.")
