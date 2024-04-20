@@ -103,7 +103,8 @@ def run_tests() -> None:
     runner.run(suite)
 
 
-def typecheck(file_path):
+def typecheck(file_path: str) -> None:
+    """Run mypy as a subprocess."""
     print("==========================================")
     print(f"Running type checks on {file_path}")
 
@@ -120,7 +121,7 @@ def typecheck(file_path):
     print(result.stderr)
         
     if result.returncode > 0:
-        raise Exception("Too many type errors.")
+        raise Exception("Failure: please fix type errors.")
     
 
 def lint(filename: str) -> None:
@@ -162,7 +163,7 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
 
     for filename in filenames:
         module_name = os.path.splitext(os.path.basename(filename))[0]
-        print(f"Running {module_name}.")
+        print(f"Attmpting to import {module_name}.py and build tests...")
         try:
             # Import the module
             student_module = importlib.import_module(module_name)
