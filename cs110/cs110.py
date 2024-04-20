@@ -137,19 +137,19 @@ def ensure_init_py(root_dir):
         print(f"Created __init__.py in {root_dir}")
 
 
-def run_tests_then_lint_directory():
+def run_tests_then_lint_directory(STUDENT_REPO_PATH):
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
-    cwd = os.getcwd()
-    ensure_init_py(cwd)
     
-    print(f"Linting {cwd}...")
+    ensure_init_py(STUDENT_REPO_PATH)
+    
+    print(f"Linting {STUDENT_REPO_PATH}...")
 
     from pylint.lint import Run
     
     reporter = ColorizedTextReporter()
 
-    results = Run([cwd], reporter=reporter, exit=False)
+    results = Run([STUDENT_REPO_PATH], reporter=reporter, exit=False)
     
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.")
