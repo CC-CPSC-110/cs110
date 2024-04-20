@@ -117,36 +117,10 @@ def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any
     print("=" * len(msg))
     print("Running instructor tests...\n")
     print("=" * len(msg))
-    for test in tests:
-        func = getattr(student_module, test['function'], None)
-        if func is None:
-            print(f"Function {test['function']} not found in module.")
-            continue
-
-        for case in test['tests']:
-            args = [convert_type(arg['value'], arg['type']) for arg in case['args']]
-            expected = convert_type(case['expected']['value'], case['expected']['type'])
-            kwargs: dict[Any, Any]  = {}
-            tolerance = case.get('tolerance')
-
-            if tolerance is not None:
-                expect(func, *args, **kwargs, expected=expected, tolerance=tolerance)
-            else:
-                expect(func, *args, **kwargs, expected=expected)
+    
+    tests.build_tests(expect, student_module)
+    
     run_tests_then_lint_directory(repo_path)
-
-
-def convert_type(value: Any, type_str: str) -> Any:
-    """Convert the value to the specified type."""
-    if type_str == "int":
-        return int(value)
-    if type_str == "float":
-        return float(value)
-    if type_str == "str":
-        return str(value)
-    if type_str == "bool":
-        return bool(value)
-    return value  # Default case if type is not recognized or not specified
 
 
 def run_tests_only() -> None:
@@ -204,7 +178,13 @@ def main(student_repo_path: str, filenames: list[str], config_file: str) -> None
 
     for filename in filenames:
         module_name = filename[:-3]  # Strip the .py from the filename to get the module name
-        tests = load_tests(config_file, module_name)
+        
+        try:
+            tests = importlib.import_module(config_file)
+
+        except ImportError as e:
+            print(f"Error importing instructor test module {config_file}: {e}")
+            continue
 
         try:
             # Import the module
