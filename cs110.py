@@ -4,6 +4,7 @@ import unittest
 import sys
 import subprocess
 from typing import Any
+import pylint
 
 __version__ = '0.0'
 
@@ -100,7 +101,15 @@ def run_tests_only():
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)  # Set verbosity to 0 to suppress default unittest output
     runner.run(suite)
-    
+
+
+def run_tests_then_lint():
+    """Run only the tests and linting, but not typechecking. Throws error if fail." 
+    run_tests_only()
+    caller_frame = inspect.stack()[1]
+    caller_file = caller_frame.filename
+    pylint.lint.Run(['--errors-only', caller_file])
+
 
 if __name__ == '__main__':
     summarize()
