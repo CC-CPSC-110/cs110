@@ -191,4 +191,3 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
 
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
-            continue
