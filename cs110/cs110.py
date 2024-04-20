@@ -166,7 +166,7 @@ def run_tests_then_lint_directory(student_repo_path: str) -> None:
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
-    print("Running tests and linters for files {filenames} and tests in {tests_path}")
+    print(f"Running tests and linters for files {filenames} and tests in {tests_path}")
     # Add the student repository path to sys.path to make it available for import
     if student_repo_path not in sys.path:
         sys.path.append(student_repo_path)
@@ -178,7 +178,7 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
         tests = importlib.import_module("lesson_tests")
     except ImportError as e:
         print(f"Error importing instructor test module: {e}")
-
+        raise e
 
     for filename in filenames:
         module_name = filename[:-3]  # Strip the .py from the filename to get the module name
@@ -192,3 +192,4 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
 
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
+            raise e
