@@ -93,7 +93,11 @@ def summarize() -> None:
 
     try:
         subprocess.check_call(
-            [sys.executable, "-m", "mypy", "--disallow-untyped-defs", caller_file])
+            [sys.executable, 
+             "-m", "mypy", 
+             "--disallow-untyped-defs", 
+             "--exclude='/\.git/'",
+             caller_file])
     except: # pylint: disable=bare-except
         print("")
 
