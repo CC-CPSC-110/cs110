@@ -75,6 +75,10 @@ def summarize() -> None:
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)  # Set verbosity to 0 to suppress default unittest output
     runner.run(suite)
+    
+    if caller_file == "<stdin>":
+        print("No need to lint the interpreter...")
+        return
 
     print("==========================================")
     print("Running type checks...")
@@ -108,6 +112,9 @@ def run_tests_then_lint():
     run_tests_only()
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
+    if caller_file == "<stdin>":
+        print("No need to lint the interpreter...")
+        return
     pylint.lint.Run(['--errors-only', caller_file])
 
 
