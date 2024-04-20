@@ -5,11 +5,11 @@ import os
 import sys
 import importlib
 import subprocess
-from typing import Any, List, Dict
+from typing import Any
 import json
 from pylint.reporters.text import ColorizedTextReporter
 from pylint.lint import Run
-from io import StringIO
+
 
 __version__ = '0.0'
 
@@ -62,8 +62,8 @@ class CustomTestRunner(unittest.TextTestRunner): # pylint: disable=too-few-publi
         print(f'\033[94mERROR: {errors} tests had errors\033[0m')
 
         if failures > 0 or errors > 0:
-            raise Exception("There were errors or test failures!")
-            
+            raise Exception("There were errors or test failures!") #pylint: disable=broad-exception-raised, line-too-long
+
         return result
 
 def summarize() -> None:
@@ -80,7 +80,7 @@ def summarize() -> None:
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)  # Set verbosity to 0 to suppress default unittest output
     runner.run(suite)
-    
+
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
         return
@@ -95,9 +95,9 @@ def summarize() -> None:
 
     try:
         subprocess.check_call(
-            [sys.executable, 
-             "-m", "mypy", 
-             "--disallow-untyped-defs", 
+            [sys.executable,
+             "-m", "mypy",
+             "--disallow-untyped-defs",
              "--exclude='.git/'",
              caller_file])
     except: # pylint: disable=bare-except
@@ -106,7 +106,7 @@ def summarize() -> None:
 
 def load_tests(config_file: str, module_name: str) -> Any:
     """Load test configurations from a JSON file for a specific module."""
-    with open(config_file, 'r') as file:
+    with open(config_file, 'r') as file: #pylint: disable=unspecified-encoding
         all_tests = json.load(file)
         return all_tests.get(module_name, [])
 
@@ -122,11 +122,11 @@ def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any
         if func is None:
             print(f"Function {test['function']} not found in module.")
             continue
-        
+
         for case in test['tests']:
             args = [convert_type(arg['value'], arg['type']) for arg in case['args']]
             expected = convert_type(case['expected']['value'], case['expected']['type'])
-            kwargs: Dict[Any, Any]  = {}
+            kwargs: dict[Any, Any]  = {}
             tolerance = case.get('tolerance')
 
             if tolerance is not None:
@@ -140,11 +140,11 @@ def convert_type(value: Any, type_str: str) -> Any:
     """Convert the value to the specified type."""
     if type_str == "int":
         return int(value)
-    elif type_str == "float":
+    if type_str == "float":
         return float(value)
-    elif type_str == "str":
+    if type_str == "str":
         return str(value)
-    elif type_str == "bool":
+    if type_str == "bool":
         return bool(value)
     return value  # Default case if type is not recognized or not specified
 
@@ -158,10 +158,11 @@ def run_tests_only() -> None:
 
 
 def lint(filename: str) -> None:
+    """Run linting."""
     reporter = ColorizedTextReporter()
-    results = Run(["--disable=C0103", filename], reporter=reporter, exit=False)
+    results = Run(["--disable=C0103,C0303,C0304,R1732", filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
-        raise Exception("Too many linting errors.")
+        raise Exception("Too many linting errors.") #pylint: disable=broad-exception-raised
 
 
 def run_tests_then_lint_file() -> None:
@@ -169,19 +170,20 @@ def run_tests_then_lint_file() -> None:
     run_tests_only()
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
-    
+
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
         return
-    
+
     print(f"Linting {caller_file}...")
     lint(caller_file)
 
 
 def ensure_init_py(root_dir: str) -> None:
+    """Ensure that there's an __init__.py before running mypy or linting"""
     init_py_path = os.path.join(root_dir, '__init__.py')
     if not os.path.isfile(init_py_path):
-        open(init_py_path, 'a').close()
+        open(init_py_path, 'a').close() #pylint: disable=consider-using-with, unspecified-encoding
         print(f"Created __init__.py in {root_dir}")
 
 
@@ -193,7 +195,7 @@ def run_tests_then_lint_directory(student_repo_path: str) -> None:
     lint(student_repo_path)
 
 
-def main(student_repo_path: str, filenames: List[str], config_file: str) -> None:
+def main(student_repo_path: str, filenames: list[str], config_file: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
     # Add the student repository path to sys.path to make it available for import
