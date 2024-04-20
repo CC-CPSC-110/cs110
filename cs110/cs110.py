@@ -127,7 +127,8 @@ def run_tests_only() -> None:
 def lint(filename: str) -> None:
     """Run linting."""
     reporter = ColorizedTextReporter()
-    results = Run(["--disable=C0103,C0303,C0304,R1732", filename], reporter=reporter, exit=False)
+    results = Run(["--disable=C0103,C0303,C0304,R1732,R0903", 
+                   filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.") #pylint: disable=broad-exception-raised
 
@@ -173,9 +174,9 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
         sys.path.append(tests_path)
 
     try:
-        tests = importlib.import_module(tests_path)
+        tests = importlib.import_module("tests")
     except ImportError as e:
-        print(f"Error importing instructor test module {tests_path}: {e}")
+        print(f"Error importing instructor test module: {e}")
 
 
     for filename in filenames:
