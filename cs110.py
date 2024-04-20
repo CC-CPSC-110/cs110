@@ -11,6 +11,7 @@ sys.tracebacklimit = 0
 
 test_cases = []
 
+
 def expect(func: Any, *args: Any, expected: Any, tolerance: Any=None) -> None:
     """ Get the caller's stack frame and extract the file name"""
     test_cases.append((func, args, expected, tolerance))
@@ -27,6 +28,7 @@ def add_dynamic_tests() -> None:
         test_method = create_test_method(func, args, expected, tolerance)
         setattr(Test, test_method_name, test_method)
 
+
 def create_test_method(func: Any, args: Any, expected: Any, tolerance: Any) -> Any:
     """create test method"""
     def test(self: Any) -> Any:
@@ -36,6 +38,7 @@ def create_test_method(func: Any, args: Any, expected: Any, tolerance: Any) -> A
         else:
             self.assertEqual(actual, expected)
     return test
+
 
 class CustomTestRunner(unittest.TextTestRunner): # pylint: disable=too-few-public-methods
     """Customized Test runner"""
@@ -89,6 +92,15 @@ def summarize() -> None:
             [sys.executable, "-m", "pylint", caller_file])
     except: # pylint: disable=bare-except
         print("")
+
+
+def run_tests_only():
+    """Runs only the tests without linting."""
+    add_dynamic_tests()
+    suite = unittest.TestLoader().loadTestsFromTestCase(Test)
+    runner = CustomTestRunner(verbosity=2)  # Set verbosity to 0 to suppress default unittest output
+    runner.run(suite)
+
 
 if __name__ == '__main__':
     summarize()
