@@ -103,7 +103,7 @@ def summarize() -> None:
 
 
 
-def run_tests_only():
+def run_tests_only() -> None:
     """Runs only the tests without linting."""
     add_dynamic_tests()
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
@@ -111,14 +111,14 @@ def run_tests_only():
     runner.run(suite)
 
 
-def lint(filename):
+def lint(filename) -> None:
     reporter = ColorizedTextReporter()
     results = Run(["--disable=C0103", filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.")
 
 
-def run_tests_then_lint_file():
+def run_tests_then_lint_file() -> None:
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
     caller_frame = inspect.stack()[1]
@@ -132,14 +132,14 @@ def run_tests_then_lint_file():
     lint(caller_file)
 
 
-def ensure_init_py(root_dir):
+def ensure_init_py(root_dir: str) -> None:
     init_py_path = os.path.join(root_dir, '__init__.py')
     if not os.path.isfile(init_py_path):
         open(init_py_path, 'a').close()
         print(f"Created __init__.py in {root_dir}")
 
 
-def run_tests_then_lint_directory(STUDENT_REPO_PATH):
+def run_tests_then_lint_directory(STUDENT_REPO_PATH: str) -> None:
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
     ensure_init_py(STUDENT_REPO_PATH)
