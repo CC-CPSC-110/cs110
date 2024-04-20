@@ -4,7 +4,8 @@ import unittest
 import sys
 import subprocess
 from typing import Any
-import pylint
+from pylint.reporters.text import ColorizedTextReporter
+from io import StringIO
 
 __version__ = '0.0'
 
@@ -115,7 +116,21 @@ def run_tests_then_lint():
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
         return
-    pylint.lint.Run(['--errors-only', caller_file])
+    
+    print(f"Linting {caller_file}...")
+
+    from pylint.lint import Run
+    
+    reporter = ColorizedTextReporter()
+
+    results = Run(["--fail-under=7.0", caller_file], reporter=reporter, exit=False)
+    
+    if results.linter.stats.global_note < 9.0:
+        raise Exception("Too many linting errors.")
+    # print(f"The final score is: {results.linter.stats.global_note}")
+    # print(reporter.out.getvalue())
+    # print(f"The value: {reporter.out}")
+
 
 
 if __name__ == '__main__':
