@@ -1,4 +1,16 @@
 from .cs110 import main  # Adjust this import based on your actual code structure
+import argparse
+
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run tests on a student's repository.")
+    parser.add_argument("--path", dest="student_repo_path", required=True,
+                        help="The path to the student's repository.")
+    parser.add_argument("--files", dest="filenames", nargs='+', required=True,
+                        help="The filename(s) of the python script(s) to test. Multiple filenames can be provided.")
+    parser.add_argument("--config", dest="config_file", required=True,
+                        help="Path to the JSON configuration file for the tests.")
+    
+    args = parser.parse_args()
+    
+    main(args.student_repo_path, args.filenames, args.config_file)

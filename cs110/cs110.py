@@ -4,7 +4,6 @@ import unittest
 import os
 import sys
 import importlib
-import argparse
 import subprocess
 from typing import Any, List
 import json
@@ -210,17 +209,3 @@ def main(student_repo_path: str, filenames: List[str], config_file: str):
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
             continue
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run tests on a student's repository.")
-    parser.add_argument("--path", dest="student_repo_path", required=True,
-                        help="The path to the student's repository.")
-    parser.add_argument("--files", dest="filenames", nargs='+', required=True,
-                        help="The filename(s) of the python script(s) to test. Multiple filenames can be provided.")
-    parser.add_argument("--config", dest="config_file", required=True,
-                        help="Path to the JSON configuration file for the tests.")
-    
-    args = parser.parse_args()
-    
-    main(args.student_repo_path, args.filenames, args.config_file)
