@@ -8,9 +8,9 @@ if __name__ == "__main__":
                         help="The path to the student's repository.")
     parser.add_argument("--files", dest="filenames", nargs='+', required=True,
                         help="The filename(s) of the python script(s) to test. Multiple filenames can be provided.")
-    parser.add_argument("--config", dest="config_file", required=True,
-                        help="Path to the JSON configuration file for the tests.")
+    parser.add_argument("--tests", dest="tests", required=True,
+                        help="Path to file for the tests.")
     
     args = parser.parse_args()
     
-    main(args.student_repo_path, args.filenames, args.config_file)
+    main(args.student_repo_path, args.filenames, args.tests)

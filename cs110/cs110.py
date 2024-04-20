@@ -104,13 +104,6 @@ def summarize() -> None:
         pass
 
 
-def load_tests(config_file: str, module_name: str) -> Any:
-    """Load test configurations from a JSON file for a specific module."""
-    with open(config_file, 'r') as file: #pylint: disable=unspecified-encoding
-        all_tests = json.load(file)
-        return all_tests.get(module_name, [])
-
-
 def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any:
     """Run specified tests on the student module."""
     msg = "Running instructor tests..."
@@ -169,22 +162,24 @@ def run_tests_then_lint_directory(student_repo_path: str) -> None:
     lint(student_repo_path)
 
 
-def main(student_repo_path: str, filenames: list[str], config_file: str) -> None:
+def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
     # Add the student repository path to sys.path to make it available for import
     if student_repo_path not in sys.path:
         sys.path.append(student_repo_path)
 
+    if student_repo_path not in sys.path:
+        sys.path.append(tests_path)
+
+    try:
+        tests = importlib.import_module(tests_path)
+    except ImportError as e:
+        print(f"Error importing instructor test module {tests_path}: {e}")
+
+
     for filename in filenames:
         module_name = filename[:-3]  # Strip the .py from the filename to get the module name
-        
-        try:
-            tests = importlib.import_module(config_file)
-
-        except ImportError as e:
-            print(f"Error importing instructor test module {config_file}: {e}")
-            continue
 
         try:
             # Import the module
