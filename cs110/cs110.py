@@ -1,6 +1,7 @@
 """Testing package for CS 110 at Corpus Christi"""
 import inspect
 import unittest
+import os
 import sys
 import subprocess
 from typing import Any
@@ -108,7 +109,7 @@ def run_tests_only():
     runner.run(suite)
 
 
-def run_tests_then_lint():
+def run_tests_then_lint_file():
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
     caller_frame = inspect.stack()[1]
@@ -127,10 +128,32 @@ def run_tests_then_lint():
     
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.")
-    # print(f"The final score is: {results.linter.stats.global_note}")
-    # print(reporter.out.getvalue())
-    # print(f"The value: {reporter.out}")
 
+
+def ensure_init_py(root_dir):
+    for subdir, dirs, files in os.walk(root_dir):
+        init_py_path = os.path.join(subdir, '__init__.py')
+        if not os.path.isfile(init_py_path):
+            open(init_py_path, 'a').close()
+            print(f"Created __init__.py in {subdir}")
+
+
+def run_tests_then_lint_directory():
+    """Run only the tests and linting, but not typechecking. Throws error if fail."""
+    run_tests_only()
+    cwd = os.getcwd()
+    ensure_init_py(cwd)
+    
+    print(f"Linting {cwd}...")
+
+    from pylint.lint import Run
+    
+    reporter = ColorizedTextReporter()
+
+    results = Run(["--fail-under=7.0", cwd], reporter=reporter, exit=False)
+    
+    if results.linter.stats.global_note < 9.0:
+        raise Exception("Too many linting errors.")
 
 
 if __name__ == '__main__':

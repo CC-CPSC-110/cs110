@@ -1,1 +1,1 @@
-from .cs110 import expect, summarize, run_tests_only, run_tests_then_lint
+from .cs110 import expect, summarize, run_tests_only, run_tests_then_lint_file, run_tests_then_lint_directory 
