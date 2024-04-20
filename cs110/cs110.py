@@ -5,7 +5,7 @@ import os
 import sys
 import importlib
 import subprocess
-from typing import Any, List
+from typing import Any, List, Dict
 import json
 from pylint.reporters.text import ColorizedTextReporter
 from pylint.lint import Run
@@ -98,21 +98,25 @@ def summarize() -> None:
             [sys.executable, 
              "-m", "mypy", 
              "--disallow-untyped-defs", 
-             "--exclude='/\.git/'",
+             "--exclude='.git/'",
              caller_file])
     except: # pylint: disable=bare-except
-        print("")
+        pass
 
 
-def load_tests(config_file, module_name):
+def load_tests(config_file: str, module_name: str) -> Any:
     """Load test configurations from a JSON file for a specific module."""
     with open(config_file, 'r') as file:
         all_tests = json.load(file)
         return all_tests.get(module_name, [])
 
 
-def run_instructor_tests(student_module, tests):
+def run_instructor_tests(student_module: Any, tests: Any, repo_path: str) -> Any:
     """Run specified tests on the student module."""
+    msg = "Running instructor tests..."
+    print("=" * len(msg))
+    print("Running instructor tests...\n")
+    print("=" * len(msg))
     for test in tests:
         func = getattr(student_module, test['function'], None)
         if func is None:
@@ -122,17 +126,17 @@ def run_instructor_tests(student_module, tests):
         for case in test['tests']:
             args = [convert_type(arg['value'], arg['type']) for arg in case['args']]
             expected = convert_type(case['expected']['value'], case['expected']['type'])
-            kwargs = {}
+            kwargs: Dict[Any, Any]  = {}
             tolerance = case.get('tolerance')
 
             if tolerance is not None:
                 expect(func, *args, **kwargs, expected=expected, tolerance=tolerance)
             else:
                 expect(func, *args, **kwargs, expected=expected)
-    run_tests_then_lint_directory(args.student_repo_path)
+    run_tests_then_lint_directory(repo_path)
 
 
-def convert_type(value, type_str):
+def convert_type(value: Any, type_str: str) -> Any:
     """Convert the value to the specified type."""
     if type_str == "int":
         return int(value)
@@ -153,7 +157,7 @@ def run_tests_only() -> None:
     runner.run(suite)
 
 
-def lint(filename) -> None:
+def lint(filename: str) -> None:
     reporter = ColorizedTextReporter()
     results = Run(["--disable=C0103", filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
@@ -181,15 +185,15 @@ def ensure_init_py(root_dir: str) -> None:
         print(f"Created __init__.py in {root_dir}")
 
 
-def run_tests_then_lint_directory(STUDENT_REPO_PATH: str) -> None:
+def run_tests_then_lint_directory(student_repo_path: str) -> None:
     """Run only the tests and linting, but not typechecking. Throws error if fail."""
     run_tests_only()
-    ensure_init_py(STUDENT_REPO_PATH)
-    print(f"Linting {STUDENT_REPO_PATH}...")
-    lint(STUDENT_REPO_PATH)
-    
+    ensure_init_py(student_repo_path)
+    print(f"Linting {student_repo_path}...")
+    lint(student_repo_path)
 
-def main(student_repo_path: str, filenames: List[str], config_file: str):
+
+def main(student_repo_path: str, filenames: List[str], config_file: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
     # Add the student repository path to sys.path to make it available for import
@@ -204,7 +208,7 @@ def main(student_repo_path: str, filenames: List[str], config_file: str):
             # Import the module
             student_module = importlib.import_module(module_name)
             print(f"Student module {module_name} imported successfully.")
-            run_instructor_tests(student_module, tests)
+            run_instructor_tests(student_module, tests, student_repo_path)
 
         except ImportError as e:
             print(f"Error importing module {module_name}: {e}")
