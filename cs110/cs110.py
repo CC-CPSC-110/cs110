@@ -121,10 +121,10 @@ def typecheck(file_path: str) -> None:
     command = ['mypy', "--disallow-untyped-defs", "--exclude='.git/'", file_path]
     result = subprocess.run(command, text=True, capture_output=True)
 
-    print(f'\033[92mPASS: {passed} tests passed\033[0m')
-    print(f'\033[91mFAIL: {failures} tests failed\033[0m')
+    # print(f'\033[92mPASS: {passed} tests passed\033[0m')
+    # print(f'\033[91mFAIL: {failures} tests failed\033[0m')
     
-    highlighted = re.sub(r"\berror\b", r"\033[92merror\033[0m", result.stdout)
+    highlighted = re.sub(r"\berror\b", r"\033[91merror\033[0m", result.stdout)
 
     print(highlighted)
     print(result.stderr)
