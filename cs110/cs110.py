@@ -62,7 +62,7 @@ class CustomTestRunner(unittest.TextTestRunner): # pylint: disable=too-few-publi
         # Update to ensure no leading characters like periods in output lines
         print(f'\033[92mPASS: {passed} tests passed\033[0m')
         print(f'\033[91mFAIL: {failures} tests failed\033[0m')
-        print(f'\033[94mERROR: {errors} tests had errors\033[0m')
+        print(blue(f'ERROR: {errors} tests had errors'))
 
         if failures > 0 or errors > 0:
             raise Exception("There were errors or test failures!") #pylint: disable=broad-exception-raised, line-too-long
@@ -75,9 +75,9 @@ def summarize() -> None:
     caller_file = caller_frame.filename
     
     printstr = f"Testing {caller_file}"
-    print("=" * len(printstr))
+    print(header(printstr))
     print(printstr)
-    print("=" * len(printstr))
+    
 
     add_dynamic_tests()
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
@@ -106,31 +106,28 @@ def run_tests() -> None:
     runner.run(suite)
 
 
+def blue(message: str) -> str:
+    return f"\033[94m{message}\033[0m"
+
+def header(message: str) -> str:
+    return '='*len(message)
+
 def typecheck(file_path: str) -> None:
     """Run mypy as a subprocess."""
-    print("==========================================")
-    print(f"\033[94mRunning type checks on {file_path}\033[0m")
-
-        # subprocess.check_call(
-        #     [sys.executable,
-        #      "-m", "mypy",
-        #      "--disallow-untyped-defs",
-        #      "--exclude='.git/'",
-        #      file_path])
+    message = f"Running type checks on {file_path}"
+    print(blue(header(message)))
+    print(blue(message))
         
     command = ['mypy', "--disallow-untyped-defs", "--exclude='.git/'", file_path]
     result = subprocess.run(command, text=True, capture_output=True)
 
-    # print(f'\033[92mPASS: {passed} tests passed\033[0m')
-    # print(f'\033[91mFAIL: {failures} tests failed\033[0m')
-    
     highlighted = re.sub(r"\berror\b", r"\033[91merror\033[0m", result.stdout)
 
     print(highlighted)
     print(result.stderr)
         
     if result.returncode > 0:
-        raise Exception("Failure: please fix type errors.")
+        raise Exception("\033[91mFailure: please fix type errors.\033[0m")
     
 
 def lint(filename: str) -> None:
