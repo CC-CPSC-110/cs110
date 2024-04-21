@@ -1,4 +1,7 @@
-"""Testing package for CS 110 at Corpus Christi"""
+"""
+Testing package for CS 110 at Corpus Christi
+install with: pip install git+https://github.com/CC-CPSC-110/cs110.git#egg=cs110 --force
+"""
 import inspect
 import unittest
 import os
