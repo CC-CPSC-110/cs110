@@ -9,7 +9,7 @@ import sys
 import importlib
 import subprocess
 from typing import Any
-import json
+import re
 from pylint.reporters.text import ColorizedTextReporter
 from pylint.lint import Run
 
@@ -109,7 +109,7 @@ def run_tests() -> None:
 def typecheck(file_path: str) -> None:
     """Run mypy as a subprocess."""
     print("==========================================")
-    print(f"Running type checks on {file_path}")
+    print(f"\033[94mRunning type checks on {file_path}\033[0m")
 
         # subprocess.check_call(
         #     [sys.executable,
@@ -120,7 +120,13 @@ def typecheck(file_path: str) -> None:
         
     command = ['mypy', "--disallow-untyped-defs", "--exclude='.git/'", file_path]
     result = subprocess.run(command, text=True, capture_output=True)
-    print(result.stdout)
+
+    print(f'\033[92mPASS: {passed} tests passed\033[0m')
+    print(f'\033[91mFAIL: {failures} tests failed\033[0m')
+    
+    highlighted = re.sub(r"\berror\b", r"\033[92merror\033[0m", result.stdout)
+
+    print(highlighted)
     print(result.stderr)
         
     if result.returncode > 0:
