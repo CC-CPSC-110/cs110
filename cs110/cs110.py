@@ -122,6 +122,7 @@ def typecheck(file_path: str) -> None:
     result = subprocess.run(command, text=True, capture_output=True)
 
     highlighted = re.sub(r"\berror\b", r"\033[91merror\033[0m", result.stdout)
+    highlighted = re.sub(r"\bSuccess:\b", r"\033[92mSuccess\033[0m", result.stdout)
 
     print(highlighted)
     print(result.stderr)
@@ -132,8 +133,9 @@ def typecheck(file_path: str) -> None:
 
 def lint(filename: str) -> None:
     """Run linting."""
-    print("==========================================")
-    print("Running linting...")
+    message = "Running linting..."
+    print(blue(header(message)))
+    print(blue(message))
 
     reporter = ColorizedTextReporter()
     results = Run(["--disable=C0103,C0303,C0304,R1732,R0903", 
@@ -152,8 +154,11 @@ def ensure_init_py(root_dir: str) -> None:
 
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
+    
+    message = f"Running tests and linters for files {filenames} and tests in {tests_path}"
+    print(blue(header(message)))
+    print(blue(message))
 
-    print(f"Running tests and linters for files {filenames} and tests in {tests_path}")
     # Add the student repository path to sys.path to make it available for import
     if student_repo_path not in sys.path:
         sys.path.append(student_repo_path)
@@ -180,9 +185,9 @@ def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
             print(f"Error importing module {module_name}: {e}")
             raise e
     
-    msg = "Running instructor tests..."
-    print("=" * len(msg))
-    print("Running instructor tests...\n")
+    msg = "Running instructor tests...\n"
+    print(blue(header(msg)))
+    print(blue(msg))
     
     run_tests()
     ensure_init_py(student_repo_path)
