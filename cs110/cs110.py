@@ -139,10 +139,7 @@ def lint(filename: str) -> None:
 
     reporter = ColorizedTextReporter()
     results = Run([
-        "--disable=C0103,C0303,C0304,R1732,R0903",
-        "--ignore-patterns=(.*/)?tests-repo/",
-        f"--ignore={filename}/tests-repo/",
-        "--verbose",
+        "--rcfile=.pylintrc",
         filename
     ], reporter=reporter, exit=False)
 
@@ -157,9 +154,26 @@ def ensure_init_py(root_dir: str) -> None:
         open(init_py_path, 'a').close() #pylint: disable=consider-using-with, unspecified-encoding
         print(f"Created __init__.py in {root_dir}")
 
+def generate_pylint_config_file(student_repo_path: str) -> None:
+    config_content = """
+[MASTER]
+ignore-patterns=(.*/)?tests-repo/
+
+[MESSAGES CONTROL]
+disable=C0103,C0303,C0304,R1732,R0903
+"""
+    with open(f'{student_repo_path}/.pylintrc', 'w') as config_file:
+        config_file.write(config_content)
 
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
+
+    # Check if .pylintrc exists, if not, generate it
+    if not os.path.exists('.pylintrc'):
+        print("No .pylintrc found, generating default configuration...")
+        generate_pylint_config_file(student_repo_path)
+    else:
+        print(".pylintrc already exists.")
     
     message = f"Running tests and linters for files {filenames} and tests in {tests_path}"
     print(blue(header(message)))
