@@ -155,9 +155,11 @@ def ensure_init_py(root_dir: str) -> None:
         print(f"Created __init__.py in {root_dir}")
 
 def generate_pylint_config_file(student_repo_path: str) -> None:
-    config_content = """
+    print(f"ignoring {student_repo_path}/tests-repo")
+    config_content = f"""
 [MASTER]
 ignore-patterns=(.*/)?tests-repo/
+ignore={student_repo_path}/tests-repo
 
 [MESSAGES CONTROL]
 disable=C0301,C0103,C0303,C0304,R1732,R0903
