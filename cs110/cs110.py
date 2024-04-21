@@ -139,7 +139,7 @@ def lint(filename: str) -> None:
 
     reporter = ColorizedTextReporter()
     results = Run(["--disable=C0103, C0303, C0304, R1732, R0903",
-                   "--ignore-patterns='(.*/)?tests-repo/.*'",
+                   "--ignore-patterns=(.*/)?tests-repo/.*",
                    filename], reporter=reporter, exit=False)
     if results.linter.stats.global_note < 9.0:
         raise Exception("Too many linting errors.") #pylint: disable=broad-exception-raised
