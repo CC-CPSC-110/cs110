@@ -167,9 +167,7 @@ disable=C0301,C0103,C0303,C0304,R1732,R0903
     with open(f'{student_repo_path}/.pylintrc', 'w') as config_file:
         config_file.write(config_content)
     
-    with open(f'.pylintrc', 'w') as config_file:
-        config_file.write(config_content)
-
+    
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
