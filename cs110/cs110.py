@@ -160,7 +160,7 @@ def generate_pylint_config_file(student_repo_path: str) -> None:
 ignore-patterns=(.*/)?tests-repo/
 
 [MESSAGES CONTROL]
-disable=C0103,C0303,C0304,R1732,R0903
+disable=C0301,C0103,C0303,C0304,R1732,R0903
 """
     with open(f'{student_repo_path}/.pylintrc', 'w') as config_file:
         config_file.write(config_content)
