@@ -62,7 +62,7 @@ class CustomTestRunner(unittest.TextTestRunner): # pylint: disable=too-few-publi
         # Update to ensure no leading characters like periods in output lines
         print(f'\033[92mPASS: {passed} tests passed\033[0m')
         print(f'\033[91mFAIL: {failures} tests failed\033[0m')
-        print(blue(f'ERROR: {errors} tests had errors'))
+        print(f'\033[93mERROR: {errors} tests had errors\033[0m')
 
         if failures > 0 or errors > 0:
             raise Exception("There were errors or test failures!") #pylint: disable=broad-exception-raised, line-too-long
