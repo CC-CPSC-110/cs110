@@ -141,6 +141,7 @@ def lint(filename: str) -> None:
     results = Run([
         "--disable=C0103,C0303,C0304,R1732,R0903",
         "--ignore-patterns=(.*/)?tests-repo/",
+        f"--ignore={filename}/tests-repo/",
         "--verbose",
         filename
     ], reporter=reporter, exit=False)
