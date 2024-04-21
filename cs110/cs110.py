@@ -140,7 +140,8 @@ def lint(filename: str) -> None:
     reporter = ColorizedTextReporter()
     results = Run([
         "--disable=C0103,C0303,C0304,R1732,R0903",
-        "--ignore-patterns=(.*/)?tests-repo/.*",
+        "--ignore-patterns=(.*/)?tests-repo/",
+        "--verbose",
         filename
     ], reporter=reporter, exit=False)
 
