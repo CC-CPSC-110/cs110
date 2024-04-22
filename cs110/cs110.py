@@ -12,8 +12,9 @@ from pylint.reporters.text import ColorizedTextReporter
 
 # ANSI color codes
 RED = "\033[1;31m"
-YELLOW = "\033[43m"
+YELLOW = "\033[33m"
 CYAN = "\033[1;36m"
+BLUE =  "\033[34m"
 GREEN = "\033[1;32m"
 RESET = "\033[0m"
 
@@ -27,7 +28,7 @@ def colorize_message(message):
         file_part_match = re.search(r"^(.*?\.py:\d+:)", line)
         if file_part_match:
             file_part = file_part_match.group(0)
-            line = line.replace(file_part, YELLOW + file_part + RESET)
+            line = line.replace(file_part, f"{YELLOW}{file_part}{RESET}")
 
         # Identify and color 'error:', 'note:', and their messages differently
         error_note_match = re.search(r"(error:|note:)", line)
@@ -35,24 +36,24 @@ def colorize_message(message):
             type_part = error_note_match.group(0)
             start = line.index(type_part)
             pre_text = line[:start]
-            post_text = line[start+len(type_part):]
+            post_text = line[start + len(type_part):]
 
             # Apply red to 'error:' or 'note:'
-            colored_type_part = RED +    + RESET
+            colored_type_part = f"{RED}{type_part}{RESET}"
 
             # Color code suggestion if it exists
             suggestion_match = re.search(r"(\[.*?\])$", post_text)
             if suggestion_match:
                 suggestion_part = suggestion_match.group(0)
-                post_text = post_text.replace(suggestion_part, GREEN + suggestion_part + RESET)
+                post_text = post_text.replace(suggestion_part, f"{GREEN}{suggestion_part}{RESET}")
 
             # Apply cyan to the rest of the message part
-            message_part = CYAN + post_text.strip() + RESET
-            line = pre_text + colored_type_part + message_part
+            message_part = f"{CYAN}{post_text.strip()}{RESET}"
+            line = f"{pre_text}{colored_type_part}{message_part}"
 
         else:
             # This applies to lines that don't start with the file reference, like summary lines
-            line = CYAN + line + RESET
+            line = f"{CYAN}{line}{RESET}"
 
         colored_lines.append(line)
 
@@ -108,7 +109,7 @@ class CustomTestRunner(unittest.TextTestRunner):
         passed = run - errors - failures
         print(f'{GREEN}PASS: {passed} tests passed{RESET}')
         print(f'{RED}FAIL: {failures} tests failed{RESET}')
-        print(f'{YELLOW}ERROR: {errors} tests had errors{RESET}')
+        print(f'{BLUE}ERROR: {errors} tests had errors{RESET}')
 
         if failures > 0 or errors > 0:
             raise Exception("There were errors or test failures!")
