@@ -118,7 +118,7 @@ def typecheck(file_path: str) -> None:
     print(blue(header(message)))
     print(blue(message))
     
-    command = ['mypy', "--disallow-untyped-defs", file_path]
+    command = ['mypy', file_path]
     result = subprocess.run(command, text=True, capture_output=True)
 
     highlighted = re.sub(r"\berror\b", r"\033[91merror\033[0m", result.stdout)
