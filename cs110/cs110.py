@@ -1,6 +1,6 @@
 import os
 import sys
-import re
+import inspect
 import subprocess
 import importlib
 import unittest
@@ -14,13 +14,9 @@ sys.tracebacklimit = 0
 test_cases: List[Tuple[Any, Tuple[Any, ...], Any, Any]] = []
 
 
-class Expectation:
-    """Utility class to append test cases to the global test_cases list."""
-
-    @staticmethod
-    def expect(func: Any, *args: Any, expected: Any, tolerance: Any = None) -> None:
-        """Append a test case for later evaluation."""
-        test_cases.append((func, args, expected, tolerance))
+def expect(func: Any, *args: Any, expected: Any, tolerance: Any = None) -> None:
+    """Append a test case for later evaluation."""
+    test_cases.append((func, args, expected, tolerance))
 
 
 class Test(unittest.TestCase):
@@ -68,12 +64,22 @@ class CustomTestRunner(unittest.TextTestRunner):
         return result
 
 
-def run_tests() -> None:
+def summarize() -> None:
     """Run dynamically added tests using a custom test runner."""
     TestUtilities.add_dynamic_tests()
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)
     runner.run(suite)
+
+    caller_frame = inspect.stack()[1]
+    caller_file = caller_frame.filename
+    
+    if caller_file == "<stdin>":
+        print("No need to lint the interpreter...")
+        return
+    
+    lint(caller_file)
+    type_check(caller_file)
 
 
 def lint(path: str) -> None:
@@ -89,6 +95,35 @@ def type_check(path: str) -> None:
         raise Exception("Type checking failed with errors")
 
 
+def generate_config_files(repo_path: str) -> None:
+    """Generate pylint and mypy configuration files at the given repository path."""
+    pylint_config_path = os.path.join(repo_path, '.pylintrc')
+    mypy_config_path = os.path.join(repo_path, 'mypy.ini')
+
+    if not os.path.exists(pylint_config_path):
+        with open(pylint_config_path, 'w') as file:
+            file.write("""
+[MASTER]
+ignore=tests
+
+[MESSAGES CONTROL]
+disable=C0301,C0103,C0303,C0304,R1732,R0903
+""")
+
+    if not os.path.exists(mypy_config_path):
+        with open(mypy_config_path, 'w') as file:
+            file.write("""
+[mypy]
+disallow_untyped_defs = True
+exclude = (tests|venv|build|docs|.git)/
+
+[mypy-*.migrations.*]
+ignore_errors = True
+""")
+
+    print("Configuration files generated.")
+
+
 def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
     """Main function that sets up testing environment and runs tests."""
     sys.path.extend([student_repo_path, tests_path])
@@ -97,10 +132,10 @@ def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
     for filename in filenames:
         module_name = os.path.splitext(os.path.basename(filename))[0]
         student_module = importlib.import_module(module_name)    
-        instructor_tests.build_tests(Expectation.expect, student_module)
+        instructor_tests.build_tests(expect, student_module)
 
-    run_tests()
     for filename in filenames:
         lint(filename)
-        type_check(filename)
+    
+    type_check(student_repo_path)
 
