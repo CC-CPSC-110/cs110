@@ -18,57 +18,55 @@ CYAN = "\033[1;36m"
 GREEN = "\033[1;32m"
 RESET = "\033[0m"
 
+import re
+
+# ANSI color codes
+RED = "\033[1;31m"
+YELLOW = "\033[1;33m"
+CYAN = "\033[1;36m"
+GREEN = "\033[1;32m"
+RESET = "\033[0m"
+
 def colorize_message(message):
     # Split the message into lines
     lines = message.strip().split('\n')
     colored_lines = []
-    
-    # Regex patterns to identify parts of the message
-    error_pattern = re.compile(r"error:")
-    note_pattern = re.compile(r"note:")
-    suggestion_pattern = re.compile(r"\[.*\]$")
-    file_line_pattern = re.compile(r"^\S+\.py:\d+:")
-    
+
     for line in lines:
         # Apply yellow color to file and line part
-        file_line_part = file_line_pattern.search(line)
-        if file_line_part:
-            start, end = file_line_part.span()
-            line = (line[:start] + YELLOW + line[start:end] + RESET + line[end:])
-        
-        # Apply red color to 'error:'
-        if "error:" in line:
-            start = line.find("error:")
-            end = start + len("error:")
-            line = (line[:start] + RED + line[start:end] + RESET + line[end:])
-        
-        # Apply green color to 'note:' and suggestions
-        if "note:" in line:
-            start = line.find("note:")
-            end = start + len("note:")
-            line = (line[:start] + RED + line[start:end] + RESET + line[end:])
+        file_part_match = re.search(r"^(.*?\.py:\d+:)", line)
+        if file_part_match:
+            file_part = file_part_match.group(0)
+            line = line.replace(file_part, YELLOW + file_part + RESET)
 
-        suggestion_part = suggestion_pattern.search(line)
-        if suggestion_part:
-            start, end = suggestion_part.span()
-            line = (line[:start] + GREEN + line[start:end] + RESET + line[end:])
+        # Identify and color 'error:', 'note:', and their messages differently
+        error_note_match = re.search(r"(error:|note:)", line)
+        if error_note_match:
+            type_part = error_note_match.group(0)
+            start = line.index(type_part)
+            pre_text = line[:start]
+            post_text = line[start+len(type_part):]
 
-        # Apply cyan color to the rest of the message
-        if "error:" in line or "note:" in line:
-            prefix_end = line.find(":") + 1
-            line = line[:prefix_end] + CYAN + line[prefix_end:] + RESET
+            # Apply red to 'error:' or 'note:'
+            colored_type_part = RED + type_part + RESET
+
+            # Color code suggestion if it exists
+            suggestion_match = re.search(r"(\[.*?\])$", post_text)
+            if suggestion_match:
+                suggestion_part = suggestion_match.group(0)
+                post_text = post_text.replace(suggestion_part, GREEN + suggestion_part + RESET)
+
+            # Apply cyan to the rest of the message part
+            message_part = CYAN + post_text.strip() + RESET
+            line = pre_text + colored_type_part + message_part
+
+        else:
+            # This applies to lines that don't start with the file reference, like summary lines
+            line = CYAN + line + RESET
 
         colored_lines.append(line)
 
     return "\n".join(colored_lines)
-
-# Example error message
-message = """lesson01.py:7: error: Function is missing a return type annotation  [no-untyped-def]
-lesson01.py:7: note: Use "-> None" if function does not return a value
-Found 1 error in 1 file (checked 1 source file)"""
-
-# Print the colorized message
-print(colorize_message(message))
 
 
 __version__ = '0.0.1'
