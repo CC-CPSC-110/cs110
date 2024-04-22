@@ -84,7 +84,7 @@ def summarize() -> None:
 
 def lint(path: str) -> None:
     """Run pylint on the given path."""
-    Run([path], reporter=ColorizedTextReporter(), do_exit=False)
+    Run([path], reporter=ColorizedTextReporter(), exit=False)
 
 
 def type_check(path: str) -> None:
