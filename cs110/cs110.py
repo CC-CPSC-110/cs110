@@ -38,7 +38,7 @@ def colorize_message(message):
             post_text = line[start+len(type_part):]
 
             # Apply red to 'error:' or 'note:'
-            colored_type_part = RED + type_part + RESET
+            colored_type_part = RED +    + RESET
 
             # Color code suggestion if it exists
             suggestion_match = re.search(r"(\[.*?\])$", post_text)
@@ -147,6 +147,7 @@ def lint(path: str) -> None:
 
 def type_check(path: str) -> None:
     """Run mypy type checking on the given path."""
+    print(f"{CYAN}Type checking {path}...{RESET}")
     result = subprocess.run(['mypy', path], text=True, capture_output=True)
     print(colorize_message(result.stdout))
     if result.returncode > 0:
