@@ -4,9 +4,72 @@ import inspect
 import subprocess
 import importlib
 import unittest
+import re
 from typing import Any, List, Tuple
 from pylint.lint import Run
 from pylint.reporters.text import ColorizedTextReporter
+
+
+
+# ANSI color codes
+RED = "\033[1;31m"
+YELLOW = "\033[1;33m"
+CYAN = "\033[1;36m"
+GREEN = "\033[1;32m"
+RESET = "\033[0m"
+
+def colorize_message(message):
+    # Split the message into lines
+    lines = message.strip().split('\n')
+    colored_lines = []
+    
+    # Regex patterns to identify parts of the message
+    error_pattern = re.compile(r"error:")
+    note_pattern = re.compile(r"note:")
+    suggestion_pattern = re.compile(r"\[.*\]$")
+    file_line_pattern = re.compile(r"^\S+\.py:\d+:")
+    
+    for line in lines:
+        # Apply yellow color to file and line part
+        file_line_part = file_line_pattern.search(line)
+        if file_line_part:
+            start, end = file_line_part.span()
+            line = (line[:start] + YELLOW + line[start:end] + RESET + line[end:])
+        
+        # Apply red color to 'error:'
+        if "error:" in line:
+            start = line.find("error:")
+            end = start + len("error:")
+            line = (line[:start] + RED + line[start:end] + RESET + line[end:])
+        
+        # Apply green color to 'note:' and suggestions
+        if "note:" in line:
+            start = line.find("note:")
+            end = start + len("note:")
+            line = (line[:start] + RED + line[start:end] + RESET + line[end:])
+
+        suggestion_part = suggestion_pattern.search(line)
+        if suggestion_part:
+            start, end = suggestion_part.span()
+            line = (line[:start] + GREEN + line[start:end] + RESET + line[end:])
+
+        # Apply cyan color to the rest of the message
+        if "error:" in line or "note:" in line:
+            prefix_end = line.find(":") + 1
+            line = line[:prefix_end] + CYAN + line[prefix_end:] + RESET
+
+        colored_lines.append(line)
+
+    return "\n".join(colored_lines)
+
+# Example error message
+message = """lesson01.py:7: error: Function is missing a return type annotation  [no-untyped-def]
+lesson01.py:7: note: Use "-> None" if function does not return a value
+Found 1 error in 1 file (checked 1 source file)"""
+
+# Print the colorized message
+print(colorize_message(message))
+
 
 __version__ = '0.0.1'
 sys.tracebacklimit = 0
@@ -97,7 +160,7 @@ def lint(path: str) -> None:
 def type_check(path: str) -> None:
     """Run mypy type checking on the given path."""
     result = subprocess.run(['mypy', path], text=True, capture_output=True)
-    print(result.stdout)
+    print(colorize_message(result.stdout))
     if result.returncode > 0:
         raise Exception("Type checking failed with errors")
 
