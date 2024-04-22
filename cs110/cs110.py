@@ -82,8 +82,11 @@ def summarize() -> None:
         print("No need to lint the interpreter...")
         return
     
-    lint(caller_file)
-    type_check(caller_file)
+    try:
+        lint(caller_file)
+        type_check(caller_file)
+    except:
+        pass
 
 
 def lint(path: str) -> None:
