@@ -154,9 +154,9 @@ def ensure_init_py(root_dir: str) -> None:
         open(init_py_path, 'a').close() #pylint: disable=consider-using-with, unspecified-encoding
         print(f"Created __init__.py in {root_dir}")
 
-def generate_pylint_config_file(student_repo_path: str) -> None:
+def generate_config_files(student_repo_path: str) -> None:
     print(f"ignoring {student_repo_path}/tests_repo")
-    config_content = f"""
+    pylint_config_content = f"""
 [MASTER]
 ignore={student_repo_path}/tests_repo
 
@@ -164,18 +164,30 @@ ignore={student_repo_path}/tests_repo
 disable=C0301,C0103,C0303,C0304,R1732,R0903
 """
     with open(f'{student_repo_path}/.pylintrc', 'w') as config_file:
-        config_file.write(config_content)
+        config_file.write(pylint_config_content)
     
     
+    mypy_config_content = f"""
+[mypy]
+disallow_untyped_defs = True
+exclude = {student_repo_path}/(tests-repo|venv|build|docs|.git)/
+
+[mypy-*.migrations.*]
+ignore_errors = True
+"""
+    with open(f'{student_repo_path}/mypy.ini', 'w') as config_file:
+        config_file.write(mypy_config_content)
+    
+
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
 
     # Check if .pylintrc exists, if not, generate it
-    if not os.path.exists('.pylintrc'):
-        print("No .pylintrc found, generating default configuration...")
-        generate_pylint_config_file(student_repo_path)
+    if not os.path.exists('.pylintrc') and not os.path.exists('mypy.ini'):
+        print("No .pylintrc or mypy.ini found, generating default configuration...")
+        generate_config_files(student_repo_path)
     else:
-        print(".pylintrc already exists.")
+        print(".pylintrc or mypy.ini already exists.")
     
     message = f"Running tests and linters for files {filenames} and tests in {tests_path}"
     print(blue(header(message)))
