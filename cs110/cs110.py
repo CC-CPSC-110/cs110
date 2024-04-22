@@ -10,19 +10,9 @@ from pylint.lint import Run
 from pylint.reporters.text import ColorizedTextReporter
 
 
-
 # ANSI color codes
 RED = "\033[1;31m"
-YELLOW = "\033[1;33m"
-CYAN = "\033[1;36m"
-GREEN = "\033[1;32m"
-RESET = "\033[0m"
-
-import re
-
-# ANSI color codes
-RED = "\033[1;31m"
-YELLOW = "\033[1;33m"
+YELLOW = "\033[43m"
 CYAN = "\033[1;36m"
 GREEN = "\033[1;32m"
 RESET = "\033[0m"
