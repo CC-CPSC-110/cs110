@@ -147,10 +147,15 @@ def lint(path: str) -> None:
     Run([path], reporter=ColorizedTextReporter(), exit=False)
 
 
-def type_check(path: str) -> None:
+def type_check(path: str, config=None) -> None:
     """Run mypy type checking on the given path."""
     print(f"{GREEN}Type checking {path}...{RESET}")
-    result = subprocess.run(['mypy', path], text=True, capture_output=True)
+    
+    if config != None:
+        result = subprocess.run(['mypy', path, f"--config={config}"], text=True, capture_output=True)
+    else:
+        result = subprocess.run(['mypy', path], text=True, capture_output=True)
+
     print(colorize_message(result.stdout))
     if result.returncode > 0:
         raise Exception("Type checking failed with errors")
@@ -199,5 +204,5 @@ def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
     for filename in filenames:
         lint(filename)
     
-    type_check(student_repo_path)
+    type_check(student_repo_path, config=f"{student_repo_path}/mypy.ini")
 
