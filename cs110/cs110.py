@@ -132,7 +132,7 @@ def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
     for filename in filenames:
         module_name = os.path.splitext(os.path.basename(filename))[0]
         student_module = importlib.import_module(module_name)    
-        instructor_tests.build_tests(expect, student_module)
+        instructor_tests.TestBuilder().build_tests(expect, student_module)
 
     for filename in filenames:
         lint(filename)
