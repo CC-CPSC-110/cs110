@@ -74,6 +74,10 @@ def summarize() -> None:
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
     
+
+    generate_config_files(os.getcwd())
+
+
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
         return
