@@ -128,6 +128,7 @@ def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
     """Main function that sets up testing environment and runs tests."""
     sys.path.extend([student_repo_path, tests_path])
     instructor_tests = importlib.import_module("lesson_tests")
+    generate_config_files(student_repo_path)
     
     for filename in filenames:
         module_name = os.path.splitext(os.path.basename(filename))[0]
