@@ -83,7 +83,7 @@ class TestUtilities:
     def add_dynamic_tests() -> None:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
         for index, (func, args, expected, tolerance) in enumerate(test_cases, start=1):
-            test_method_name = f'test_{index}_{func.__name__}'
+            test_method_name = f'test_{index}_{func.__name__}({args}) = {expected}'
             test_method = TestUtilities.create_test_method(func, args, expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
