@@ -106,9 +106,9 @@ class CustomTestRunner(unittest.TextTestRunner):
         result = super().run(test)
         run, errors, failures = result.testsRun, len(result.errors), len(result.failures)
         passed = run - errors - failures
-        print(f'\033[92mPASS: {passed} tests passed\033[0m')
-        print(f'\033[91mFAIL: {failures} tests failed\033[0m')
-        print(f'\033[93mERROR: {errors} tests had errors\033[0m')
+        print(f'{GREEN}PASS: {passed} tests passed{RESET}')
+        print(f'{RED}FAIL: {failures} tests failed{RESET}')
+        print(f'{YELLOW}ERROR: {errors} tests had errors{RESET}')
 
         if failures > 0 or errors > 0:
             raise Exception("There were errors or test failures!")
@@ -120,14 +120,14 @@ def summarize() -> None:
     TestUtilities.add_dynamic_tests()
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)
+    
+    print(f"{GREEN}Running student-defined tests...{RESET}")
     runner.run(suite)
 
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
     
-
     generate_config_files(os.getcwd())
-
 
     if caller_file == "<stdin>":
         print("No need to lint the interpreter...")
@@ -142,12 +142,13 @@ def summarize() -> None:
 
 def lint(path: str) -> None:
     """Run pylint on the given path."""
+    print(f"{GREEN}Linting {path}...{RESET}")
     Run([path], reporter=ColorizedTextReporter(), exit=False)
 
 
 def type_check(path: str) -> None:
     """Run mypy type checking on the given path."""
-    print(f"{CYAN}Type checking {path}...{RESET}")
+    print(f"{GREEN}Type checking {path}...{RESET}")
     result = subprocess.run(['mypy', path], text=True, capture_output=True)
     print(colorize_message(result.stdout))
     if result.returncode > 0:
