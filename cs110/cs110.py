@@ -163,8 +163,9 @@ ignore={student_repo_path}/tests_repo
 [MESSAGES CONTROL]
 disable=C0301,C0103,C0303,C0304,R1732,R0903
 """
-    with open(f'{student_repo_path}/.pylintrc', 'w') as config_file:
-        config_file.write(pylint_config_content)
+    print(f'Writing to: {student_repo_path}/.pylintrc')
+    with open(f'{student_repo_path}/.pylintrc', 'w') as pylint_config_file:
+        pylint_config_file.write(pylint_config_content)
     
     
     mypy_config_content = f"""
@@ -175,9 +176,38 @@ exclude = {student_repo_path}/(tests-repo|venv|build|docs|.git)/
 [mypy-*.migrations.*]
 ignore_errors = True
 """
-    with open(f'{student_repo_path}/mypy.ini', 'w') as config_file:
-        config_file.write(mypy_config_content)
+    print(f'Writing to: {student_repo_path}/mypy.ini')
+    with open(f'{student_repo_path}/mypy.ini', 'w') as mypy_config_file:
+        mypy_config_file.write(mypy_config_content)
+
+    print_directory_contents(student_repo_path)
     
+
+def print_directory_contents(path: str) -> None:
+    """
+    Prints the contents of the specified directory in a pretty format.
+    
+    :param path: Path to the directory whose contents are to be printed.
+    """
+    files = []
+    directories = []
+    
+    # Get all entries in the directory specified by path
+    for entry in os.listdir(path):
+        full_path = os.path.join(path, entry)
+        if os.path.isdir(full_path):
+            directories.append(entry)
+        else:
+            files.append(entry)
+    
+    print("Directories:")
+    for directory in sorted(directories):
+        print(f"  [D] {directory}")
+    
+    print("\nFiles:")
+    for file in sorted(files):
+        print(f"  [F] {file}") 
+
 
 def main(student_repo_path: str, filenames: list[str], tests_path: str) -> None:
     """Main function to import student modules, load tests and run them."""
