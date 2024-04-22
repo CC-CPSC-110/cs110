@@ -181,7 +181,7 @@ disable=C0301,C0103,C0303,C0304,R1732,R0903
             file.write("""
 [mypy]
 disallow_untyped_defs = True
-exclude = (tests|venv|build|docs|.git)/
+exclude = (tests_repo|tests|venv|build|docs|.git)/
 
 [mypy-*.migrations.*]
 ignore_errors = True
