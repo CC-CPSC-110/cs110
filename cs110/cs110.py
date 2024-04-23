@@ -123,7 +123,11 @@ def summarize() -> None:
     runner = CustomTestRunner(verbosity=2)
     
     print(f"{GREEN}Running student-defined tests...{RESET}")
-    runner.run(suite)
+    
+    try:
+        runner.run(suite)
+    except:
+        pass
 
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
