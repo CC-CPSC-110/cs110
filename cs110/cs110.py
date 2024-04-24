@@ -177,7 +177,7 @@ def generate_config_files(repo_path: str) -> None:
 ignore=tests
 
 [MESSAGES CONTROL]
-disable=C0301,C0103,C0303,C0304,R1732,R0903
+disable=C0301,C0103,C0303,C0304,R1732,R0903,R1705
 """)
 
     if not os.path.exists(mypy_config_path):
