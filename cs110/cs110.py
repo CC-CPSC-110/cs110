@@ -73,7 +73,7 @@ def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
     func_name = frame.f_code.co_name
     
     # Check if the result matches the expected value
-    test_cases.append((lambda: result, (), equals, tolerance))
+    test_cases.append((result, (), equals, tolerance))
 
 
 
