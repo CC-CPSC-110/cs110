@@ -66,14 +66,14 @@ sys.tracebacklimit = 0
 
 test_cases = []
 
-def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
+def expect(result: Any, *args, equals: Any, tolerance: Any = None) -> None:
     """Append a test case for later evaluation."""
     # Capture the calling function name
     frame = inspect.currentframe().f_back
-    func_name = frame.f_code.co_name
+    func_name = result.__name__
     
     # Check if the result matches the expected value
-    test_cases.append((lambda: result, (), func_name, equals, tolerance))
+    test_cases.append((lambda: result, args, func_name, equals, tolerance))
 
 
 
