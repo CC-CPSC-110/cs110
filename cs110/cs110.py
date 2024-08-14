@@ -66,13 +66,23 @@ sys.tracebacklimit = 0
 
 test_cases = []
 
-def expect(result: Any, *args: Any, equals: Any, tolerance: Any = None) -> None:
-    """Append a test case for later evaluation."""
-    # Capture the calling function name
-    func_name = result.__name__
-    # Check if the result matches the expected value
-    test_cases.append((lambda: result, args, func_name, equals, tolerance))
 
+def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
+    """Append a test case for later evaluation."""
+    # Get the caller's frame and extract the source code of the call
+    frame = inspect.currentframe().f_back
+    code_context = frame.f_code
+    func_call_str = frame.f_globals.get(code_context.co_names[0])
+    
+    # Parse the function name and arguments from the code context
+    func_name = func_call_str.__name__
+    
+    # Capture the function name and its arguments for display
+    args_str = inspect.getframeinfo(frame).code_context[0].strip()
+    args_str = args_str[args_str.index('(')+1:args_str.rindex(')')]
+    
+    # Append the test case
+    test_cases.append((result, args_str, func_name, equals, tolerance))
 
 
 class Test(unittest.TestCase):
@@ -89,7 +99,7 @@ class TestUtilities:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
         for index, (func, args, func_name, expected, tolerance) in enumerate(test_cases, start=1):
             test_method_name = f'test_{index}: {func_name}{args} = {expected}'
-            test_method = TestUtilities.create_test_method(func, (), expected, tolerance)
+            test_method = TestUtilities.create_test_method(func, args, expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
     @staticmethod
