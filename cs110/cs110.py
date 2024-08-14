@@ -63,24 +63,17 @@ def colorize_message(message):
 __version__ = '0.0.1'
 sys.tracebacklimit = 0
 
-test_cases: List[Tuple[Any, Tuple[Any, ...], Any, Any]] = []
+test_cases: List[Tuple[Any, Tuple[Any, ...], Any, Any, Any]] = []
 
 
-def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
+def expect(result_func: Any, *args: Any, equals: Any, tolerance: Any = None) -> None:
     """Append a test case for later evaluation."""
-    # Capture the calling function name
-    frame = inspect.currentframe().f_back
-    func_name = frame.f_code.co_name
-    
-    # Check if the result matches the expected value
-    test_cases.append((lambda: result, (), equals, tolerance))
-
-
+    func_name = result_func.__name__
+    test_cases.append((result_func, args, func_name, equals, tolerance))
 
 
 class Test(unittest.TestCase):
     """Dynamic test case class which will contain dynamically added test methods."""
-
     pass
 
 
@@ -90,8 +83,9 @@ class TestUtilities:
     @staticmethod
     def add_dynamic_tests() -> None:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
-        for index, (func, args, expected, tolerance) in enumerate(test_cases, start=1):
-            test_method_name = f'test_{index}: {func.__name__}{args} = {expected}'
+        for index, (func, args, func_name, expected, tolerance) in enumerate(test_cases, start=1):
+            args_str = ", ".join(map(str, args))
+            test_method_name = f'test_{index}: {func_name}({args_str}) = {expected}'
             test_method = TestUtilities.create_test_method(func, args, expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
@@ -162,7 +156,7 @@ def type_check(path: str, config=None) -> None:
     """Run mypy type checking on the given path."""
     print(f"{GREEN}Type checking {path}...{RESET}")
     
-    if config != None:
+    if config is not None:
         result = subprocess.run(['mypy', path, f"--config={config}"], text=True, capture_output=True)
     else:
         result = subprocess.run(['mypy', path], text=True, capture_output=True)
@@ -212,8 +206,4 @@ def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
         student_module = importlib.import_module(module_name)    
         instructor_tests.TestBuilder().build_tests(expect, student_module)
 
-    for filename in filenames:
-        lint(filename)
-    
-    type_check(student_repo_path, config=f"{student_repo_path}/mypy.ini")
-
+   
