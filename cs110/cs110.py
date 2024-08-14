@@ -66,12 +66,10 @@ sys.tracebacklimit = 0
 
 test_cases = []
 
-def expect(result: Any, *args, equals: Any, tolerance: Any = None) -> None:
+def expect(result: Any, *args: Any, equals: Any, tolerance: Any = None) -> None:
     """Append a test case for later evaluation."""
     # Capture the calling function name
-    frame = inspect.currentframe().f_back
     func_name = result.__name__
-    
     # Check if the result matches the expected value
     test_cases.append((lambda: result, args, func_name, equals, tolerance))
 
@@ -91,7 +89,7 @@ class TestUtilities:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
         for index, (func, args, func_name, expected, tolerance) in enumerate(test_cases, start=1):
             test_method_name = f'test_{index}: {func_name}{args} = {expected}'
-            test_method = TestUtilities.create_test_method(func, args, expected, tolerance)
+            test_method = TestUtilities.create_test_method(func, (), expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
     @staticmethod
