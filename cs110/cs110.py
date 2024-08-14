@@ -66,18 +66,15 @@ sys.tracebacklimit = 0
 test_cases: List[Tuple[Any, Tuple[Any, ...], Any, Any]] = []
 
 
-def expect(*, equals: Any, tolerance: Any = None) -> None:
+def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
     """Append a test case for later evaluation."""
-    # Capture the function that generated the result and its arguments
+    # Capture the calling function name
     frame = inspect.currentframe().f_back
-    code_context = frame.f_code.co_name
-    func_name = frame.f_code.co_names[0]
-    func = eval(func_name, frame.f_globals, frame.f_locals)
+    func_name = frame.f_code.co_name
     
-    args = frame.f_locals['args'] if 'args' in frame.f_locals else ()
-    
-    # Append the test case
-    test_cases.append((func, args, equals, tolerance))
+    # Check if the result matches the expected value
+    test_cases.append((lambda: result, (), equals, tolerance))
+
 
 
 
