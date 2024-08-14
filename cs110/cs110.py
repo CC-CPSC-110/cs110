@@ -66,7 +66,7 @@ sys.tracebacklimit = 0
 test_cases: List[Tuple[Any, Tuple[Any, ...], Any, Any]] = []
 
 
-def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
+def expect(*, equals: Any, tolerance: Any = None) -> None:
     """Append a test case for later evaluation."""
     # Capture the function that generated the result and its arguments
     frame = inspect.currentframe().f_back
