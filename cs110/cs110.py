@@ -67,22 +67,14 @@ sys.tracebacklimit = 0
 test_cases = []
 
 
-def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
+def expect(result, *, equals, tolerance=None, description=None):
     """Append a test case for later evaluation."""
-    # Get the caller's frame and extract the source code of the call
-    frame = inspect.currentframe().f_back
-    code_context = frame.f_code
-    func_call_str = frame.f_globals.get(code_context.co_names[0])
+    # If no description is provided, use the result itself (less informative)
+    if description is None:
+        description = f"Result: {result}"
     
-    # Parse the function name and arguments from the code context
-    func_name = func_call_str.__name__
-    
-    # Capture the function name and its arguments for display
-    args_str = inspect.getframeinfo(frame).code_context[0].strip()
-    args_str = args_str[args_str.index('(')+1:args_str.rindex(')')]
-    
-    # Append the test case
-    test_cases.append((result, args_str, func_name, equals, tolerance))
+    # Store the description along with the result, expected value, and tolerance
+    test_cases.append((result, description, equals, tolerance))
 
 
 class Test(unittest.TestCase):
@@ -97,21 +89,21 @@ class TestUtilities:
     @staticmethod
     def add_dynamic_tests() -> None:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
-        for index, (func, args, func_name, expected, tolerance) in enumerate(test_cases, start=1):
-            test_method_name = f'test_{index}: {func_name}{args} = {expected}'
-            test_method = TestUtilities.create_test_method(func, args, expected, tolerance)
+        for index, (result, description, expected, tolerance) in enumerate(test_cases, start=1):
+            test_method_name = f'test_{index}: {description} = {expected}'
+            test_method = TestUtilities.create_test_method(result, expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
     @staticmethod
-    def create_test_method(func: Any, args: Tuple[Any, ...], expected: Any, tolerance: Any) -> Any:
+    def create_test_method(result, expected, tolerance):
         """Factory method to create a test method."""
         def test_method(self: Test) -> None:
-            actual = func(*args)
             if tolerance is not None:
-                self.assertAlmostEqual(actual, expected, delta=tolerance)
+                self.assertAlmostEqual(result, expected, delta=tolerance)
             else:
-                self.assertEqual(actual, expected)
+                self.assertEqual(result, expected)
         return test_method
+
 
 
 class CustomTestRunner(unittest.TextTestRunner):
