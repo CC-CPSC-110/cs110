@@ -63,8 +63,8 @@ def colorize_message(message):
 __version__ = '0.0.1'
 sys.tracebacklimit = 0
 
-test_cases: List[Tuple[Any, Tuple[Any, ...], Any, Any]] = []
 
+test_cases = []
 
 def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
     """Append a test case for later evaluation."""
@@ -73,7 +73,7 @@ def expect(result: Any, *, equals: Any, tolerance: Any = None) -> None:
     func_name = frame.f_code.co_name
     
     # Check if the result matches the expected value
-    test_cases.append((result, (), equals, tolerance))
+    test_cases.append((lambda: result, (), func_name, equals, tolerance))
 
 
 
@@ -89,8 +89,8 @@ class TestUtilities:
     @staticmethod
     def add_dynamic_tests() -> None:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
-        for index, (func, args, expected, tolerance) in enumerate(test_cases, start=1):
-            test_method_name = f'test_{index}: {func.__name__}{args} = {expected}'
+        for index, (func, args, func_name, expected, tolerance) in enumerate(test_cases, start=1):
+            test_method_name = f'test_{index}: {func_name}{args} = {expected}'
             test_method = TestUtilities.create_test_method(func, args, expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
