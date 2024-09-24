@@ -71,8 +71,8 @@ test_cases = []
 def expect(result, *args, equals=None, tolerance=None, description=None):
     """
     Append a test case for later evaluation, with flexibility for keyword and positional 'expected'.
+    Properly handle `None` as expected value.
     """
-    
     # Handle both cases: positional 'expected' or keyword 'equals'
     if equals is not None:
         expected = equals
@@ -84,13 +84,22 @@ def expect(result, *args, equals=None, tolerance=None, description=None):
     # If no description is provided, use the result itself (less informative)
     if description is None:
         description = f"Result: {result}"
-    
-    # Special handling for comparing None values using `is`
-    if result is None or expected is None:
-        test_cases.append(((result is expected), description, True, tolerance))
+
+    # Handle `None` comparison explicitly
+    if result is None and expected is None:
+        comparison_result = True
+    elif tolerance is not None and isinstance(result, (int, float)) and isinstance(expected, (int, float)):
+        # If tolerance is set, compare within the tolerance
+        comparison_result = abs(result - expected) <= tolerance
     else:
-        # Store the description along with the result, expected value, and tolerance
-        test_cases.append((result, description, expected, tolerance))
+        # Regular comparison for non-None, non-tolerance cases
+        comparison_result = result == expected
+
+    if not comparison_result:
+        raise AssertionError(f"Test failed: expected {expected}, but got {result}")
+
+    # Store the description along with the result, expected value, and tolerance
+    test_cases.append((result, description, expected, tolerance))
 
 
 class Test(unittest.TestCase):
