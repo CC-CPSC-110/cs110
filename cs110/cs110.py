@@ -10,6 +10,15 @@ from pylint.lint import Run
 from pylint.reporters.text import ColorizedTextReporter
 
 
+def install(package: str, *args) -> None:
+    """Install the given package using pip."""
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package, *args])
+    except subprocess.CalledProcessError as e:
+        print(f"{RED}Failed to install package: {package}. Error: {e}{RESET}")
+        sys.exit(1)
+
+
 # ANSI color codes
 RED = "\033[1;31m"
 YELLOW = "\033[33m"
@@ -19,40 +28,32 @@ GREEN = "\033[1;32m"
 RESET = "\033[0m"
 
 def colorize_message(message):
-    # Split the message into lines
+    """Apply colorization to the message for better readability."""
     lines = message.strip().split('\n')
     colored_lines = []
 
     for line in lines:
-        # Apply yellow color to file and line part
         file_part_match = re.search(r"^(.*?\.py:\d+:)", line)
         if file_part_match:
             file_part = file_part_match.group(0)
             line = line.replace(file_part, f"{YELLOW}{file_part}{RESET}")
 
-        # Identify and color 'error:', 'note:', and their messages differently
         error_note_match = re.search(r"(error:|note:)", line)
         if error_note_match:
             type_part = error_note_match.group(0)
             start = line.index(type_part)
             pre_text = line[:start]
             post_text = line[start + len(type_part):]
-
-            # Apply red to 'error:' or 'note:'
             colored_type_part = f"{RED}{type_part}{RESET}"
 
-            # Color code suggestion if it exists
             suggestion_match = re.search(r"(\[.*?\])$", post_text)
             if suggestion_match:
                 suggestion_part = suggestion_match.group(0)
                 post_text = post_text.replace(suggestion_part, f"{GREEN}{suggestion_part}{RESET}")
 
-            # Apply cyan to the rest of the message part
             message_part = f"{CYAN}{post_text.strip()}{RESET}"
             line = f"{pre_text}{colored_type_part}{message_part}"
-
         else:
-            # This applies to lines that don't start with the file reference, like summary lines
             line = f"{CYAN}{line}{RESET}"
 
         colored_lines.append(line)
@@ -67,19 +68,28 @@ sys.tracebacklimit = 0
 test_cases = []
 
 
-def expect(result, *, equals, tolerance=None, description=None):
-    """Append a test case for later evaluation."""
+def expect(result, *args, equals=None, tolerance=None, description=None):
+    """Append a test case for later evaluation, with flexibility for keyword and positional 'expected'."""
+    
+    # Handle both cases: positional 'expected' or keyword 'equals'
+    if equals is not None:
+        expected = equals
+    elif len(args) > 0:
+        expected = args[0]
+    else:
+        raise ValueError("Expected value must be provided either positionally or with 'equals' keyword.")
+    
     # If no description is provided, use the result itself (less informative)
     if description is None:
         description = f"Result: {result}"
     
     # Store the description along with the result, expected value, and tolerance
-    test_cases.append((result, description, equals, tolerance))
+    test_cases.append((result, description, expected, tolerance))
+
 
 
 class Test(unittest.TestCase):
     """Dynamic test case class which will contain dynamically added test methods."""
-
     pass
 
 
@@ -103,7 +113,6 @@ class TestUtilities:
             else:
                 self.assertEqual(result, expected)
         return test_method
-
 
 
 class CustomTestRunner(unittest.TextTestRunner):
@@ -132,43 +141,54 @@ def summarize() -> None:
     
     try:
         runner.run(suite)
-    except:
-        pass
+    except Exception as e:
+        print(f"{RED}Error during test execution: {e}{RESET}")
 
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
-    
-    generate_config_files(os.getcwd())
 
-    if caller_file == "<stdin>":
-        print("No need to lint the interpreter...")
-        return
-    
     try:
+        generate_config_files(os.getcwd())
+
+        if caller_file == "<stdin>":
+            print("No need to lint the interpreter...")
+            return
+
         lint(caller_file)
         type_check(caller_file)
-    except:
-        pass
+    except (FileNotFoundError, ImportError, subprocess.CalledProcessError) as e:
+        print(f"{RED}An error occurred during code quality checks: {e}{RESET}")
 
 
 def lint(path: str) -> None:
     """Run pylint on the given path."""
-    print(f"{GREEN}Linting {path}...{RESET}")
-    Run([path], reporter=ColorizedTextReporter(), exit=False)
+    try:
+        print(f"{GREEN}Linting {path}...{RESET}")
+        Run([path], reporter=ColorizedTextReporter(), exit=False)
+    except FileNotFoundError as e:
+        print(f"{RED}Pylint file not found: {e}{RESET}")
+    except Exception as e:
+        print(f"{RED}Linting error: {e}{RESET}")
 
 
 def type_check(path: str, config=None) -> None:
     """Run mypy type checking on the given path."""
-    print(f"{GREEN}Type checking {path}...{RESET}")
-    
-    if config != None:
-        result = subprocess.run(['mypy', path, f"--config={config}"], text=True, capture_output=True)
-    else:
-        result = subprocess.run(['mypy', path], text=True, capture_output=True)
+    try:
+        print(f"{GREEN}Type checking {path}...{RESET}")
+        cmd = ['mypy', path]
+        if config:
+            cmd.append(f"--config={config}")
+        result = subprocess.run(cmd, text=True, capture_output=True)
 
-    print(colorize_message(result.stdout))
-    if result.returncode > 0:
-        raise Exception("Type checking failed with errors")
+        print(colorize_message(result.stdout))
+        if result.returncode > 0:
+            raise subprocess.CalledProcessError(result.returncode, cmd)
+    except FileNotFoundError as e:
+        print(f"{RED}Mypy not found: {e}{RESET}")
+    except subprocess.CalledProcessError as e:
+        print(f"{RED}Type checking failed: {e}{RESET}")
+    except Exception as e:
+        print(f"{RED}Type checking error: {e}{RESET}")
 
 
 def generate_config_files(repo_path: str) -> None:
@@ -176,9 +196,10 @@ def generate_config_files(repo_path: str) -> None:
     pylint_config_path = os.path.join(repo_path, '.pylintrc')
     mypy_config_path = os.path.join(repo_path, 'mypy.ini')
 
-    if not os.path.exists(pylint_config_path):
-        with open(pylint_config_path, 'w') as file:
-            file.write("""
+    try:
+        if not os.path.exists(pylint_config_path):
+            with open(pylint_config_path, 'w') as file:
+                file.write("""
 [MASTER]
 ignore=tests
 
@@ -186,9 +207,9 @@ ignore=tests
 disable=C0301,C0103,C0303,C0304,R1732,R0903,R1705
 """)
 
-    if not os.path.exists(mypy_config_path):
-        with open(mypy_config_path, 'w') as file:
-            file.write("""
+        if not os.path.exists(mypy_config_path):
+            with open(mypy_config_path, 'w') as file:
+                file.write("""
 [mypy]
 disallow_untyped_defs = True
 exclude = (tests_repo|tests|venv|build|docs|.git)/
@@ -196,23 +217,28 @@ exclude = (tests_repo|tests|venv|build|docs|.git)/
 [mypy-*.migrations.*]
 ignore_errors = True
 """)
-
-    print("Configuration files generated.")
+        print(f"{GREEN}Configuration files generated.{RESET}")
+    except IOError as e:
+        print(f"{RED}Error writing config files: {e}{RESET}")
 
 
 def main(student_repo_path: str, filenames: List[str], tests_path: str) -> None:
     """Main function that sets up testing environment and runs tests."""
-    sys.path.extend([student_repo_path, tests_path])
-    instructor_tests = importlib.import_module("lesson_tests")
-    generate_config_files(student_repo_path)
-    
-    for filename in filenames:
-        module_name = os.path.splitext(os.path.basename(filename))[0]
-        student_module = importlib.import_module(module_name)    
-        instructor_tests.TestBuilder().build_tests(expect, student_module)
+    try:
+        sys.path.extend([os.path.abspath(student_repo_path), os.path.abspath(tests_path)])
+        instructor_tests = importlib.import_module("lesson_tests")
+        generate_config_files(student_repo_path)
+        
+        for filename in filenames:
+            module_name = os.path.splitext(os.path.basename(filename))[0]
+            student_module = importlib.import_module(module_name)    
+            instructor_tests.TestBuilder().build_tests(expect, student_module)
 
-    for filename in filenames:
-        lint(filename)
-    
-    type_check(student_repo_path, config=f"{student_repo_path}/mypy.ini")
-
+        for filename in filenames:
+            lint(os.path.abspath(filename))
+        
+        type_check(student_repo_path, config=os.path.join(student_repo_path, 'mypy.ini'))
+    except (FileNotFoundError, ImportError) as e:
+        print(f"{RED}Error: {e}{RESET}")
+    except Exception as e:
+        print(f"{RED}Unexpected error: {e}{RESET}")
