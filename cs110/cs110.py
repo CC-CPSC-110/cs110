@@ -69,7 +69,9 @@ test_cases = []
 
 
 def expect(result, *args, equals=None, tolerance=None, description=None):
-    """Append a test case for later evaluation, with flexibility for keyword and positional 'expected'."""
+    """
+    Append a test case for later evaluation, with flexibility for keyword and positional 'expected'.
+    """
     
     # Handle both cases: positional 'expected' or keyword 'equals'
     if equals is not None:
@@ -83,9 +85,12 @@ def expect(result, *args, equals=None, tolerance=None, description=None):
     if description is None:
         description = f"Result: {result}"
     
-    # Store the description along with the result, expected value, and tolerance
-    test_cases.append((result, description, expected, tolerance))
-
+    # Special handling for comparing None values using `is`
+    if result is None or expected is None:
+        test_cases.append((result is expected, description, True, tolerance))
+    else:
+        # Store the description along with the result, expected value, and tolerance
+        test_cases.append((result, description, expected, tolerance))
 
 
 class Test(unittest.TestCase):
