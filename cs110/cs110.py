@@ -67,43 +67,41 @@ sys.tracebacklimit = 0
 
 test_cases = []
 
-def expect(result, *args, equals=None, tolerance=None, description=None):
+def expect(result: Any, *args: Any, equals: Any = None, tolerance: float = None, description: str = None) -> None:
     """
     Append a test case for later evaluation.
-    Flexibility for both positional and keyword 'equals' arguments.
-    Handles cases where the expected result is `None`.
+    Accepts both positional and 'equals' keyword for expected values.
     """
-
-    # Determine the expected value, from either 'equals' or a positional argument
+    # Handle expected value from positional or keyword 'equals'
     if equals is not None:
         expected = equals
-    elif len(args) > 0:
+    elif args:
         expected = args[0]
     else:
-        raise ValueError("Expected value must be provided either positionally or with 'equals'.")
+        raise ValueError("Expected value must be provided either as a positional argument or with 'equals'.")
 
-    # If no description is provided, use a default message
+    # If no description is provided, default to a basic one
     if description is None:
-        description = f"Result: {result}"
+        description = f"Result: {result}, Expected: {expected}"
 
-    # Handle the special case where both result and expected are `None`
+    # Check if both result and expected are None
     if result is None and expected is None:
         comparison_result = True
+    # If one is None and the other isn't, it's a failure
     elif result is None or expected is None:
-        # If one is None and the other is not, they are not equal
         comparison_result = False
-    elif tolerance is not None and isinstance(result, (int, float)) and isinstance(expected, (int, float)):
-        # Handle float comparison with tolerance
+    # Handle comparison with tolerance if applicable
+    elif tolerance is not None and isinstance(result, (float, int)) and isinstance(expected, (float, int)):
         comparison_result = abs(result - expected) <= tolerance
     else:
-        # General comparison for all other types
+        # General comparison using equality
         comparison_result = result == expected
 
-    # If comparison fails, raise an assertion error
+    # Raise an error if the test fails
     if not comparison_result:
-        raise AssertionError(f"Test failed: expected {expected}, but got {result}")
+        raise AssertionError(f"Test failed: {description}")
 
-    # Store the test case for future reference (if needed)
+    # Append the test case to the list (if tracking test cases is necessary)
     test_cases.append((result, description, expected, tolerance))
 
 
