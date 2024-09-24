@@ -87,7 +87,7 @@ def expect(result, *args, equals=None, tolerance=None, description=None):
     
     # Special handling for comparing None values using `is`
     if result is None or expected is None:
-        test_cases.append((result is expected, description, True, tolerance))
+        test_cases.append(((result is expected), description, True, tolerance))
     else:
         # Store the description along with the result, expected value, and tolerance
         test_cases.append((result, description, expected, tolerance))
