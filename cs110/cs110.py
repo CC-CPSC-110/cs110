@@ -175,8 +175,10 @@ def lint(path: str) -> None:
         Run([path], reporter=ColorizedTextReporter(), exit=False)
     except FileNotFoundError as e:
         print(f"{RED}Pylint file not found: {e}{RESET}")
+        traceback.print_exc()  # Detailed traceback
     except Exception as e:
         print(f"{RED}Linting error: {e}{RESET}")
+        traceback.print_exc()  # Detailed traceback
 
 
 def type_check(path: str, config=None) -> None:
@@ -193,10 +195,13 @@ def type_check(path: str, config=None) -> None:
             raise subprocess.CalledProcessError(result.returncode, cmd)
     except FileNotFoundError as e:
         print(f"{RED}Mypy not found: {e}{RESET}")
+        traceback.print_exc()  # Detailed traceback
     except subprocess.CalledProcessError as e:
         print(f"{RED}Type checking failed: {e}{RESET}")
+        traceback.print_exc()  # Detailed traceback
     except Exception as e:
         print(f"{RED}Type checking error: {e}{RESET}")
+        traceback.print_exc()  # Detailed traceback
 
 
 def generate_config_files(repo_path: str) -> None:
