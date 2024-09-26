@@ -4,6 +4,7 @@ import inspect
 import subprocess
 import importlib
 import unittest
+import traceback
 import re
 from typing import Any, List, Tuple
 from pylint.lint import Run
@@ -17,6 +18,10 @@ def install(package: str, *args) -> None:
     except subprocess.CalledProcessError as e:
         print(f"{RED}Failed to install package: {package}. Error: {e}{RESET}")
         sys.exit(1)
+
+
+def reinstall():
+    install("git+https://github.com/CC-CPSC-110/cs110.git", "--force")
 
 
 # ANSI color codes
@@ -84,26 +89,8 @@ def expect(result: Any, *args: Any, equals: Any = None, tolerance: float = None,
     if description is None:
         description = f"Result: {result}, Expected: {expected}"
 
-    comparison_result = False
-    # Check if both result and expected are None
-    if result is None and expected is None:
-        comparison_result = True
-    # If one is None and the other isn't, it's a failure
-    elif result is None or expected is None:
-        comparison_result = False
-    # Handle comparison with tolerance if applicable
-    elif tolerance is not None and isinstance(result, (float, int)) and isinstance(expected, (float, int)):
-        comparison_result = abs(result - expected) <= tolerance
-    else:
-        # General comparison using equality
-        comparison_result = result == expected
-
-    # Raise an error if the test fails
-    # if not comparison_result:
-    #     raise AssertionError(f"Test failed: {description}")
-
     # Append the test case to the list (if tracking test cases is necessary)
-    test_cases.append((result, description, comparison_result, tolerance))
+    test_cases.append((result, description, expected, tolerance))
 
 
 class Test(unittest.TestCase):
@@ -128,6 +115,8 @@ class TestUtilities:
         def test_method(self: Test) -> None:
             if tolerance is not None:
                 self.assertAlmostEqual(result, expected, delta=tolerance)
+            if expected is None:
+                self.assertIsNone(result)
             else:
                 self.assertEqual(result, expected)
         return test_method
@@ -175,6 +164,7 @@ def summarize() -> None:
         lint(caller_file)
         type_check(caller_file)
     except (FileNotFoundError, ImportError, subprocess.CalledProcessError) as e:
+        traceback.print_exc()
         print(f"{RED}An error occurred during code quality checks: {e}{RESET}")
 
 
