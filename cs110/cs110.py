@@ -72,6 +72,10 @@ sys.tracebacklimit = 0
 
 test_cases = []
 
+def get_test_cases():
+    return test_cases
+
+
 def expect(result: Any, *args: Any, equals: Any = None, tolerance: float = None, description: str = None) -> None:
     """
     Append a test case for later evaluation.
