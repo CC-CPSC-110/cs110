@@ -1,1 +1,1 @@
-from .cs110 import expect, summarize
+from .cs110 import expect, summarize, install, reinstall

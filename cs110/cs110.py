@@ -143,17 +143,13 @@ def summarize() -> None:
     TestUtilities.add_dynamic_tests()
     suite = unittest.TestLoader().loadTestsFromTestCase(Test)
     runner = CustomTestRunner(verbosity=2)
-
+    
     print(f"{GREEN}Running student-defined tests...{RESET}")
-
+    
     try:
         runner.run(suite)
     except Exception as e:
-        # Catch any error that happens during test execution and print a helpful message
         print(f"{RED}Error during test execution: {e}{RESET}")
-        # Print the detailed traceback to help diagnose issues
-        import traceback
-        traceback.print_exc()
 
     caller_frame = inspect.stack()[1]
     caller_file = caller_frame.filename
@@ -168,8 +164,8 @@ def summarize() -> None:
         lint(caller_file)
         type_check(caller_file)
     except (FileNotFoundError, ImportError, subprocess.CalledProcessError) as e:
-        print(f"{RED}An error occurred during code quality checks: {e}{RESET}")
         traceback.print_exc()
+        print(f"{RED}An error occurred during code quality checks: {e}{RESET}")
 
 
 def lint(path: str) -> None:
