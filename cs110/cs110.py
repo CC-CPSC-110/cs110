@@ -110,6 +110,8 @@ class TestUtilities:
         """Create and add dynamic test methods to TestCase based on global test_cases."""
         for index, (result, description, expected, tolerance) in enumerate(test_cases, start=1):
             test_method_name = f'test_{index}: {description} = {expected}'
+            if tolerance:
+                test_method_name = f"{test_method_name}; tolerance: {tolerance}"
             test_method = TestUtilities.create_test_method(result, expected, tolerance)
             setattr(Test, test_method_name, test_method)
 
