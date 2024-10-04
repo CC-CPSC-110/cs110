@@ -121,7 +121,7 @@ class TestUtilities:
         def test_method(self: Test) -> None:
             if tolerance is not None:
                 self.assertAlmostEqual(result, expected, delta=tolerance)
-            if expected is None:
+            elif expected is None:
                 self.assertIsNone(result)
             else:
                 self.assertEqual(result, expected)
